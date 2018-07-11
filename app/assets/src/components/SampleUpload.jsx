@@ -5,6 +5,7 @@ import $ from "jquery";
 import Tipsy from "react-tipsy";
 import IconComponent from "./IconComponent";
 import ObjectHelper from "../helpers/ObjectHelper";
+import PropTypes from "prop-types";
 
 class SampleUpload extends React.Component {
   constructor(props, context) {
@@ -1060,4 +1061,10 @@ class SampleUpload extends React.Component {
     return <div>{this.renderSampleForm(this.props.selectedSample)}</div>;
   }
 }
+
+// SampleUpload.propTypes = {
+//   csrf: PropTypes.string,
+//   projectInfo: ProjTypes.string
+// }
+
 export default SampleUpload;

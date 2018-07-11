@@ -8,13 +8,13 @@ import copy from "copy-to-clipboard";
 import { StickyContainer, Sticky } from "react-sticky";
 import symlog from "./symlog";
 import AdvancedThresholdFilterDropdown from "./modules/AdvancedThresholdFilter";
-import ObjectHelper from "../helpers/ObjectHelper";
 import ErrorBoundary from "./ErrorBoundary";
 import Heatmap from "./visualizations/Heatmap";
 import HeatmapLegend from "./visualizations/HeatmapLegend";
 import ReactNouislider from "./ReactNouislider";
 import LabeledDropdown from "./modules/LabeledDropdown";
 import LabeledFilterDropdown from "./modules/LabeledFilterDropdown";
+import PropTypes from "prop-types";
 import TaxonTooltip from "./TaxonTooltip";
 
 class SamplesHeatmap extends React.Component {
@@ -836,5 +836,16 @@ class SamplesHeatmap extends React.Component {
     );
   }
 }
+
+SamplesHeatmap.propTypes = {
+  backgrounds: PropTypes.array,
+  categories: PropTypes.array,
+  metrics: PropTypes.array,
+  taxonLevels: PropTypes.array,
+  advancedFilters: PropTypes.array,
+  sampleIds: PropTypes.array,
+  taxonIds: PropTypes.array,
+  explicitApply: PropTypes.bool
+};
 
 export default SamplesHeatmap;

@@ -13,7 +13,11 @@
       "jsx": true
     }
   },
-  "extends": ["standard", "eslint:recommended"],
+  "extends": [
+    "standard", 
+    "eslint:recommended",
+    "plugin:react/recommended"
+  ],
   "rules": {
     "no-unused-vars": 1,
     "standard/object-curly-even-spacing": 1,
@@ -22,6 +26,7 @@
     "no-unreachable": 1,
     "no-console": 1,
     "no-useless-escape": 1,
-    "no-undef": 1
+    "no-undef": 1,
+    "react/jsx-uses-vars": 2
   }
 }
