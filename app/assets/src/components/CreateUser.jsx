@@ -1,5 +1,6 @@
-import React from "react";
 import axios from "axios";
+import PropTypes from "prop-types";
+import React from "react";
 
 class CreateUser extends React.Component {
   constructor(props, context) {
@@ -358,4 +359,10 @@ class CreateUser extends React.Component {
     );
   }
 }
+
+CreateUser.propTypes = {
+  csrf: PropTypes.string,
+  selectedUser: PropTypes.object
+};
+
 export default CreateUser;

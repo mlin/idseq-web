@@ -1,4 +1,4 @@
-import axios from "axios";
+import PropTypes from "prop-types";
 import React from "react";
 
 class ReadViz extends React.Component {
@@ -35,66 +35,64 @@ class ReadViz extends React.Component {
       readInfo.metrics[5] = seqLen - m4 + 1;
     }
 
-    let aligned_portion = sequence.slice(
+    let alignedPortion = sequence.slice(
       readInfo.metrics[4] - 1,
       readInfo.metrics[5]
     );
-    let left_portion =
+    let leftPortion =
       readInfo.metrics[4] - 2 >= 0
         ? sequence.slice(0, readInfo.metrics[4] - 1)
         : "";
-    let right_portion =
+    let rightPortion =
       readInfo.metrics[5] < seqLen ? sequence.slice(readInfo.metrics[5]) : "";
 
-    if (readInfo.refInfo[0].length > left_portion.length) {
+    if (readInfo.refInfo[0].length > leftPortion.length) {
       // trim refInfo[0]
       readInfo.refInfo[0] = readInfo.refInfo[0].slice(
-        readInfo.refInfo[0].length - left_portion.length
+        readInfo.refInfo[0].length - leftPortion.length
       );
     } else {
       // pad refInfo[0]
-      while (readInfo.refInfo[0].length < left_portion.length) {
+      while (readInfo.refInfo[0].length < leftPortion.length) {
         readInfo.refInfo[0] = " " + readInfo.refInfo[0];
       }
     }
 
-    if (readInfo.refInfo[2].length > right_portion.length) {
+    if (readInfo.refInfo[2].length > rightPortion.length) {
       //trim refInfo[2]
-      readInfo.refInfo[2] = readInfo.refInfo[2].slice(0, right_portion.length);
+      readInfo.refInfo[2] = readInfo.refInfo[2].slice(0, rightPortion.length);
     } else {
-      while (readInfo.refInfo[2].length < right_portion.length) {
+      while (readInfo.refInfo[2].length < rightPortion.length) {
         readInfo.refInfo[2] += " ";
       }
     }
-    let [quality_string1, mis_matches1] = this.generateQualityString(
+    let [qualityString1, mismatches1] = this.generateQualityString(
       readInfo.refInfo[1],
-      aligned_portion
+      alignedPortion
     );
-    let [quality_string2, mis_matches2] = this.generateQualityString(
+    let [qualityString2, mismatches2] = this.generateQualityString(
       readInfo.refInfo[1],
-      this.complementSeq(aligned_portion)
+      this.complementSeq(alignedPortion)
     );
-    let quality_string =
-      mis_matches1 < mis_matches2 ? quality_string1 : quality_string2;
-    let white_space_left = this.repeatStr(" ", left_portion.length);
-    let white_space_right = this.repeatStr(" ", right_portion.length);
-    let ref_seq_display = readInfo.refInfo.join("|");
-    let read_seq_display = [left_portion, aligned_portion, right_portion].join(
-      "|"
-    );
-    let quality_string_display = [
-      white_space_left,
-      quality_string,
-      white_space_right
+    let qualityString =
+      mismatches1 < mismatches2 ? qualityString1 : qualityString2;
+    let whiteSpaceLeft = this.repeatStr(" ", leftPortion.length);
+    let whiteSpaceRight = this.repeatStr(" ", rightPortion.length);
+    let refSeqDisplay = readInfo.refInfo.join("|");
+    let readSeqDisplay = [leftPortion, alignedPortion, rightPortion].join("|");
+    let qualityStringDisplay = [
+      whiteSpaceLeft,
+      qualityString,
+      whiteSpaceRight
     ].join("|");
 
     // generate quality string
     return {
       reversed: reversed,
       read_part: readPart,
-      ref_display: ref_seq_display,
-      read_display: read_seq_display,
-      quality_display: quality_string_display
+      ref_display: refSeqDisplay,
+      read_display: readSeqDisplay,
+      quality_display: qualityStringDisplay
     };
   }
 
@@ -107,19 +105,19 @@ class ReadViz extends React.Component {
   }
 
   generateQualityString(refString, seqString) {
-    let mis_matches = 0;
-    let quality_string = "";
+    let mismatches = 0;
+    let qualityString = "";
     for (let i = 0; i < seqString.length; i += 1) {
       let cr = refString[i];
       let cs = seqString[i];
       if (cr === "N" || cs === "N" || cr === cs) {
-        quality_string += " ";
+        qualityString += " ";
       } else {
-        quality_string += "X";
-        mis_matches += 1;
+        qualityString += "X";
+        mismatches += 1;
       }
     }
-    return [quality_string, mis_matches];
+    return [qualityString, mismatches];
   }
 
   complementSeq(seq) {
@@ -187,4 +185,10 @@ class ReadViz extends React.Component {
     );
   }
 }
+
+ReadViz.propTypes = {
+  name: PropTypes.string,
+  metrics: PropTypes.array.isRequired
+};
+
 export default ReadViz;

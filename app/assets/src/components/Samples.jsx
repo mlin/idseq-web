@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import React, { Component } from "react";
 import axios from "axios";
 import ReactDOM from "react-dom";
@@ -692,9 +693,11 @@ class Samples extends React.Component {
   fetchResults(cb, reset_filters = false) {
     this.nanobar.go(30);
     // always fetch from page one
-    this.state.pagesLoaded = 0;
-    this.state.pageEnd = false;
-    this.state.isRequesting = true;
+    this.setState({
+      pagesLoaded: 0,
+      pageEnd: false,
+      isRequesting: true
+    });
     const params = this.getParams();
     axios
       .get(`/samples?${params}`)
@@ -1147,11 +1150,13 @@ class Samples extends React.Component {
       if (this.state.hostFilterChange || this.state.tissueFilterChange) {
         this.setUrlLocation("none");
         this.fetchResults();
-        this.state.hostFilterChange = false;
-        this.state.tissueFilterChange = false;
+        this.setState({
+          hostFilterChange: false,
+          tissueFilterChange: false
+        });
       }
     } else {
-      this.state.checkInUpdate = true;
+      this.setState({ checkInUpdate: true });
     }
   }
 
@@ -1331,6 +1336,16 @@ class Samples extends React.Component {
   }
 }
 
+Samples.propTypes = {
+  csrf: PropTypes.string,
+  admin: PropTypes.number,
+  favorites: PropTypes.array,
+  projects: PropTypes.array,
+  pageSize: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  editableProjects: PropTypes.array,
+  allBackgrounds: PropTypes.array
+};
+
 function LabelTagMarkup({
   state_all_options,
   i,
@@ -1359,6 +1374,17 @@ function LabelTagMarkup({
   );
 }
 
+LabelTagMarkup.propTypes = {
+  state_all_options: PropTypes.string,
+  i: PropTypes.number,
+  name: PropTypes.string,
+  prefix: PropTypes.string,
+  id: PropTypes.any,
+  id_type: PropTypes.string,
+  state_selected_options: PropTypes.string,
+  parent: PropTypes.object
+};
+
 function FilterItemMarkup({
   status,
   filterSelect,
@@ -1382,6 +1408,13 @@ function FilterItemMarkup({
     </li>
   );
 }
+
+FilterItemMarkup.propTypes = {
+  status: PropTypes.string,
+  filterSelect: PropTypes.func,
+  status_filter_css_classes: PropTypes.array,
+  pos: PropTypes.number
+};
 
 function ColumnDropdown({
   pos,
@@ -1424,6 +1457,16 @@ function ColumnDropdown({
   );
 }
 
+ColumnDropdown.propTypes = {
+  pos: PropTypes.number,
+  colMap: PropTypes.object,
+  column_name: PropTypes.string,
+  filterStatus: PropTypes.node,
+  allColumns: PropTypes.array,
+  columnsShown: PropTypes.array,
+  parent: PropTypes.object
+};
+
 function FilterListMarkup({
   projInfo,
   search_box,
@@ -1460,6 +1503,16 @@ function FilterListMarkup({
   );
 }
 
+FilterListMarkup.propTypes = {
+  projInfo: PropTypes.node,
+  search_box: PropTypes.node,
+  host_filter_tag_list: PropTypes.node,
+  tissue_filter_tag_list: PropTypes.node,
+  tableHead: PropTypes.PropTypes.node,
+  samples: PropTypes.array,
+  parent: PropTypes.object
+};
+
 function ColumnEntries({
   columnsShown,
   name,
@@ -1490,6 +1543,16 @@ function ColumnEntries({
   );
 }
 
+ColumnEntries.propTypes = {
+  columnsShown: PropTypes.array,
+  name: PropTypes.string,
+  i: PropTypes.number,
+  column_name: PropTypes.string,
+  colMap: PropTypes.object,
+  pos: PropTypes.number,
+  parent: PropTypes.object
+};
+
 function SampleNameInfo({ parent, dbSample, uploader }) {
   return (
     <span
@@ -1517,6 +1580,12 @@ function SampleNameInfo({ parent, dbSample, uploader }) {
     </span>
   );
 }
+
+SampleNameInfo.propTypes = {
+  parent: PropTypes.object,
+  dbSample: PropTypes.object,
+  uploader: PropTypes.string
+};
 
 function PipelineOutputDataValues({
   derivedOutput,
@@ -1631,6 +1700,17 @@ function PipelineOutputCards({
   );
 }
 
+PipelineOutputCards.propTypes = {
+  i: PropTypes.number,
+  dbSample: PropTypes.object,
+  report_ready: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
+  sample_name_info: PropTypes.object,
+  stageStatus: PropTypes.object,
+  total_runtime: PropTypes.number,
+  data_values: PropTypes.object,
+  parent: PropTypes.object
+};
+
 function MetadataFilter({ parent }) {
   return (
     <Dropdown text="Filter" className="col s2 wrapper all-filter-btn">
@@ -1640,6 +1720,10 @@ function MetadataFilter({ parent }) {
     </Dropdown>
   );
 }
+
+MetadataFilter.propTypes = {
+  parent: PropTypes.object
+};
 
 function TableSearchField({ searchParams, parent }) {
   let search_field_width = "col s3 no-padding";
@@ -1660,12 +1744,19 @@ function TableSearchField({ searchParams, parent }) {
   );
 }
 
+TableSearchField.propTypes = {
+  searchParams: PropTypes.string,
+  parent: PropTypes.object
+};
+
 function TableDownloadDropdown({ project_id, parent }) {
   let renderText = (
-    <span>
-      {"Download"}
-      <Icon name="angle down" />
-    </span>
+    <div className="text">
+      <span>
+        Download
+        <Icon name="angle down" />
+      </span>
+    </div>
   );
   return (
     <div className="download-wrapper">
@@ -1674,7 +1765,7 @@ function TableDownloadDropdown({ project_id, parent }) {
         className="icon link download-btn"
         labeled
         icon={{ className: "cloud download alternate" }}
-        text={renderText}
+        trigger={renderText}
       >
         <Dropdown.Menu>
           <Dropdown.Item href={`/projects/${project_id}/csv`}>
@@ -1707,6 +1798,11 @@ function TableDownloadDropdown({ project_id, parent }) {
     </div>
   );
 }
+
+TableDownloadDropdown.propTypes = {
+  project_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  parent: PropTypes.object
+};
 
 class AddUserModal extends React.Component {
   constructor(props) {
@@ -1797,6 +1893,11 @@ class AddUserModal extends React.Component {
   }
 }
 
+AddUserModal.propTypes = {
+  parent: PropTypes.object,
+  state: PropTypes.object
+};
+
 function ProjectHeaderMenu({ proj, proj_users_count, parent }) {
   return (
     <div className="right col s12">
@@ -1836,6 +1937,12 @@ function ProjectHeaderMenu({ proj, proj_users_count, parent }) {
     </div>
   );
 }
+
+ProjectHeaderMenu.propTypes = {
+  proj: PropTypes.object,
+  proj_users_count: PropTypes.number,
+  parent: PropTypes.object
+};
 
 function ProjectInfoHeading({
   proj,
@@ -1889,6 +1996,18 @@ function ProjectInfoHeading({
   );
 }
 
+ProjectInfoHeading.propTypes = {
+  proj: PropTypes.object,
+  samplesCount: PropTypes.number,
+  selectedStr: PropTypes.string,
+  project_menu: PropTypes.node,
+  table_download_dropdown: PropTypes.node,
+  compare_button: PropTypes.node,
+  delete_project_button: PropTypes.node,
+  state: PropTypes.object,
+  canEditProject: PropTypes.func
+};
+
 function TableColumnHeaders({ sort, colMap, filterStatus, state, parent }) {
   return (
     <div className="col s12 sample-feed-head no-padding samples-table-head">
@@ -1936,6 +2055,14 @@ function TableColumnHeaders({ sort, colMap, filterStatus, state, parent }) {
   );
 }
 
+TableColumnHeaders.propTypes = {
+  sort: PropTypes.string,
+  colMap: PropTypes.object,
+  filterStatus: PropTypes.node,
+  state: PropTypes.object,
+  parent: PropTypes.object
+};
+
 function JobStatusFilters({
   status_filter_options,
   filterSelect,
@@ -1962,6 +2089,12 @@ function JobStatusFilters({
   );
 }
 
+JobStatusFilters.propTypes = {
+  status_filter_options: PropTypes.array,
+  filterSelect: PropTypes.func,
+  status_filter_css_classes: PropTypes.array
+};
+
 function ColumnPopups({ pos, colMap, column_name }) {
   return (
     <Popup
@@ -1981,6 +2114,12 @@ function ColumnPopups({ pos, colMap, column_name }) {
     />
   );
 }
+
+ColumnPopups.propTypes = {
+  pos: PropTypes.number,
+  colMap: PropTypes.object,
+  column_name: PropTypes.string
+};
 
 function SampleCardCheckboxes({
   dbSample,
@@ -2011,6 +2150,14 @@ function SampleCardCheckboxes({
     </li>
   );
 }
+
+SampleCardCheckboxes.propTypes = {
+  dbSample: PropTypes.object,
+  report_ready: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
+  sample_name_info: PropTypes.object,
+  i: PropTypes.number,
+  parent: PropTypes.object
+};
 
 function SampleDetailedColumns({
   dbSample,
@@ -2128,6 +2275,10 @@ function MetadataFilterDropdowns({ parent }) {
   );
 }
 
+MetadataFilterDropdowns.propTypes = {
+  parent: PropTypes.object
+};
+
 function AddUserModalMemberArea({ state, parent }) {
   return (
     <div>
@@ -2179,5 +2330,10 @@ function AddUserModalMemberArea({ state, parent }) {
     </div>
   );
 }
+
+AddUserModalMemberArea.propTypes = {
+  state: PropTypes.object,
+  parent: PropTypes.object
+};
 
 export default Samples;

@@ -22,12 +22,12 @@ contextKeys.forEach(key => {
   if (a && a.name) {
     foundComponents[a.name] = a;
   }
-}); // Turn off camelcase rule
-/* eslint camelcase: 0 */ const react_component = (
-  componentName,
-  props,
-  target
-) => {
+});
+
+// TODO: review Rails integration
+/* eslint camelcase: 0 */
+
+const react_component = (componentName, props, target) => {
   const matchedComponent = foundComponents[componentName];
   if (matchedComponent) {
     ReactDOM.render(
@@ -35,7 +35,7 @@ contextKeys.forEach(key => {
       document.getElementById(target)
     );
   } else {
-    console.error(
+    throw new Error(
       "Couldn't find component for",
       componentName,
       foundComponents

@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import React from "react";
 import ScatterPlot from "./ScatterPlot";
 
@@ -31,5 +32,9 @@ class ERCCScatterPlot extends React.Component {
     );
   }
 }
+
+ERCCScatterPlot.propTypes = {
+  ercc_comparison: PropTypes.array
+};
 
 export default ERCCScatterPlot;

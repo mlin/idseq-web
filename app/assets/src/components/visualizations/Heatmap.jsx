@@ -17,7 +17,7 @@ export default class Heatmap extends React.Component {
     this.renderD3();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (ObjectHelper.shallowEquals(nextProps, this.props)) {
       return;
     }
@@ -27,33 +27,33 @@ export default class Heatmap extends React.Component {
   }
 
   initializeData(props) {
-    this.row_number = props.rows;
-    this.col_number = props.columns;
+    this.rowNumber = props.rows;
+    this.colNumber = props.columns;
 
     this.rowLabel = [];
     this.colLabel = [];
 
-    let longest_row_label = 0,
-      longest_col_label = 0;
+    let longestRowLabel = 0,
+      longestColLabel = 0;
 
     // Figure out column and row labels
-    for (let i = 0; i < this.row_number; i += 1) {
+    for (let i = 0; i < this.rowNumber; i += 1) {
       let label = props.getRowLabel(i);
       this.rowLabel.push(label);
-      let row_width = textWidth(label, {
+      let rowWidth = textWidth(label, {
         size: "8pt"
       });
 
-      longest_row_label = Math.max(longest_row_label, row_width);
+      longestRowLabel = Math.max(longestRowLabel, rowWidth);
     }
 
-    for (let j = 0; j < this.col_number; j += 1) {
+    for (let j = 0; j < this.colNumber; j += 1) {
       let label = props.getColumnLabel(j);
       this.colLabel.push(label);
-      let col_width = textWidth(label, {
+      let colWidth = textWidth(label, {
         size: "8pt"
       });
-      longest_col_label = Math.max(longest_col_label, col_width);
+      longestColLabel = Math.max(longestColLabel, colWidth);
     }
 
     // Generate the grid data
@@ -61,8 +61,8 @@ export default class Heatmap extends React.Component {
     this.min = 999999999;
     this.max = -999999999;
 
-    for (var i = 0; i < this.row_number; i += 1) {
-      for (var j = 0; j < this.col_number; j += 1) {
+    for (var i = 0; i < this.rowNumber; i += 1) {
+      for (var j = 0; j < this.colNumber; j += 1) {
         let value = props.getCellValue(i, j);
         this.data.push({
           row: i,
@@ -76,18 +76,18 @@ export default class Heatmap extends React.Component {
       }
     }
     this.margin = {
-      top: longest_col_label * Math.cos(25 * (Math.PI / 180)) + 15,
-      left: Math.max(Math.ceil(Math.sqrt(this.row_number)) * 10, 40),
+      top: longestColLabel * Math.cos(25 * (Math.PI / 180)) + 15,
+      left: Math.max(Math.ceil(Math.sqrt(this.rowNumber)) * 10, 40),
       bottom: 80,
-      right: longest_row_label + 20
+      right: longestRowLabel + 20
     };
-    this.cellWidth = Math.max(900 / this.col_number, 20);
-    this.cellHeight = Math.max(400 / this.row_number, 15);
+    this.cellWidth = Math.max(900 / this.colNumber, 20);
+    this.cellHeight = Math.max(400 / this.rowNumber, 15);
 
     this.width =
-      this.cellWidth * this.col_number + this.margin.left + this.margin.right;
+      this.cellWidth * this.colNumber + this.margin.left + this.margin.right;
     this.height =
-      this.cellHeight * this.row_number + this.margin.top + this.margin.bottom;
+      this.cellHeight * this.rowNumber + this.margin.top + this.margin.bottom;
 
     this.colTree = props.colTree;
     this.rowTree = props.rowTree;
@@ -180,10 +180,10 @@ export default class Heatmap extends React.Component {
   }
 
   renderColDendrogram() {
-    let width = this.cellWidth * this.col_number,
+    let width = this.cellWidth * this.colNumber,
       height = this.margin.bottom - 20;
 
-    let top_offset = this.margin.top + this.cellHeight * this.row_number + 10;
+    let topOffset = this.margin.top + this.cellHeight * this.rowNumber + 10;
     let container = this.renderDendrogram(
       this.colTree,
       width,
@@ -194,7 +194,7 @@ export default class Heatmap extends React.Component {
     container.attr(
       "transform",
       "rotate(90) translate(" +
-        top_offset +
+        topOffset +
         ", -" +
         (width + this.margin.left) +
         ")"
@@ -209,7 +209,7 @@ export default class Heatmap extends React.Component {
 
   renderRowDendrogram() {
     let height = this.margin.left - 20,
-      width = this.cellHeight * this.row_number;
+      width = this.cellHeight * this.rowNumber;
 
     let container = this.renderDendrogram(
       this.rowTree,
@@ -324,14 +324,14 @@ export default class Heatmap extends React.Component {
       .on("mouseover", d => {
         d3.selectAll(".heatmap").classed("highlighting", true);
         let base = d.source.children.slice();
-        let to_visit = base;
-        while (to_visit.length > 0) {
-          let node = to_visit.pop();
+        let toVisit = base;
+        while (toVisit.length > 0) {
+          let node = toVisit.pop();
           if (node.left) {
-            to_visit.push(node.left);
+            toVisit.push(node.left);
           }
           if (node.right) {
-            to_visit.push(node.right);
+            toVisit.push(node.right);
           }
           let cls = "." + cssClass + "-link-" + node.parent.id + "-" + node.id;
           d3.selectAll(cls).classed("link-hover", true);
@@ -374,14 +374,14 @@ export default class Heatmap extends React.Component {
   renderLegend() {
     let that = this,
       height = 20,
-      x_offset = this.cellWidth * this.col_number;
+      xOffset = this.cellWidth * this.colNumber;
 
     this.offsetCanvas
       .selectAll(".legend-text-min")
       .data([this.min])
       .enter()
       .append("text")
-      .attr("x", x_offset)
+      .attr("x", xOffset)
       .attr("y", -33)
       .attr("class", "mono")
       .text(Math.round(this.min));
@@ -393,7 +393,7 @@ export default class Heatmap extends React.Component {
       .append("text")
       .attr("class", "mono")
       .attr("x", function() {
-        return x_offset + that.legendElementWidth * that.colors.length;
+        return xOffset + that.legendElementWidth * that.colors.length;
       })
       .attr("y", -33)
       .text(Math.round(this.max))
@@ -409,7 +409,7 @@ export default class Heatmap extends React.Component {
     legend
       .append("rect")
       .attr("x", function(d, i) {
-        return Math.floor(x_offset + that.legendElementWidth * i);
+        return Math.floor(xOffset + that.legendElementWidth * i);
       })
       .attr("y", -10 - height)
       .attr("width", Math.ceil(this.legendElementWidth))
@@ -421,7 +421,7 @@ export default class Heatmap extends React.Component {
     this.offsetCanvas
       .append("rect")
       .attr("x", function(d, i) {
-        return x_offset + that.legendElementWidth * i;
+        return xOffset + that.legendElementWidth * i;
       })
       .attr("stroke", "#aaa")
       .attr("stroke-width", "0.25")
@@ -444,7 +444,7 @@ export default class Heatmap extends React.Component {
       .attr("class", "rowLabelg")
       .attr(
         "transform",
-        "translate(" + this.cellWidth * this.col_number + ", 0)"
+        "translate(" + this.cellWidth * this.colNumber + ", 0)"
       )
       .on("mouseover", function() {
         d3.select(this).classed("text-hover", true);

@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import React from "react";
 import Slider from "rc-slider";
 
@@ -13,5 +14,10 @@ class LabeledSlider extends React.Component {
     );
   }
 }
+
+LabeledSlider.propTypes = {
+  label: PropTypes.string,
+  defaultValue: PropTypes.string
+};
 
 export default LabeledSlider;

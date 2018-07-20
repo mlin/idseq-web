@@ -1,12 +1,16 @@
+import d3 from "d3";
 import NumAbbreviate from "number-abbreviate";
 import ObjectHelper from "../../helpers/ObjectHelper";
 import React from "react";
 
 export default class HeatmapLegend extends React.Component {
   componentDidMount() {
+    // TODO: render should not be explicitly called here
     this.renderD3(this.props);
   }
-  componentWillReceiveProps(nextProps) {
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    // TODO: review this call as it will be deprecated
     if (ObjectHelper.shallowEquals(nextProps, this.props)) {
       return;
     }

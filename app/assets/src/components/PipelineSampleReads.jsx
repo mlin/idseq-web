@@ -1,10 +1,10 @@
+import PropTypes from "prop-types";
 import React from "react";
 import ReactDOM from "react-dom";
 import moment from "moment";
 import $ from "jquery";
 import axios from "axios";
-import Cookies from "js-cookie";
-import { Button, Icon, Divider, Popup, Dropdown } from "semantic-ui-react";
+import { Button, Icon, Divider, Dropdown } from "semantic-ui-react";
 import numberWithCommas from "../helpers/strings";
 import SubHeader from "./SubHeader";
 import ERCCScatterPlot from "./ERCCScatterPlot";
@@ -29,7 +29,6 @@ class PipelineSampleReads extends React.Component {
     this.reportDetails = props.reportDetails;
     this.pipelineRunRetriable = props.pipelineRunRetriable;
     this.pipelineVersions = props.pipeline_versions;
-
     this.jobStatistics = props.jobStatistics;
     this.summary_stats = props.summary_stats;
     this.gotoReport = this.gotoReport.bind(this);
@@ -529,6 +528,7 @@ class PipelineSampleReads extends React.Component {
                 const phash = { pipeline_version: version };
                 return (
                   <Dropdown.Item
+                    key={version}
                     onClick={() => {
                       this.refreshPage(phash);
                     }}
@@ -853,7 +853,7 @@ class PipelineSampleReads extends React.Component {
                 <a href={`/?project_id=${this.projectInfo.id}`}>
                   {this.projectInfo.name + " "}
                 </a>
-                > {sample_dropdown}
+                &gt; {sample_dropdown}
                 {this.sampleInfo.status == "created"
                   ? delete_sample_button
                   : null}
@@ -1029,6 +1029,31 @@ class PipelineSampleReads extends React.Component {
   }
 }
 
+PipelineSampleReads.propTypes = {
+  all_backgrounds: PropTypes.array,
+  allCategories: PropTypes.array,
+  can_edit: PropTypes.bool,
+  can_see_align_viz: PropTypes.bool,
+  csrf: PropTypes.string,
+  ercc_comparison: PropTypes.array,
+  gitVersion: PropTypes.string,
+  host_genome: PropTypes.object,
+  jobStatistics: PropTypes.object,
+  rerun_path: PropTypes.string,
+  pipeline_versions: PropTypes.array,
+  reportPageParams: PropTypes.object,
+  pipelineRun: PropTypes.object,
+  pipelineRunRetriable: PropTypes.bool,
+  projectInfo: PropTypes.object,
+  project_sample_ids_names: PropTypes.object,
+  reportDetails: PropTypes.object,
+  reportPresent: PropTypes.string,
+  reportTime: PropTypes.string,
+  sampleInfo: PropTypes.object,
+  sample_status: PropTypes.string,
+  summary_stats: PropTypes.object
+};
+
 function ResultButton({ url, icon, label, visible }) {
   return visible ? (
     <a className="custom-button" href={url}>
@@ -1037,5 +1062,12 @@ function ResultButton({ url, icon, label, visible }) {
     </a>
   ) : null;
 }
+
+ResultButton.propTypes = {
+  icon: PropTypes.string,
+  label: PropTypes.string,
+  url: PropTypes.string,
+  visible: PropTypes.oneOfType([PropTypes.bool, PropTypes.number])
+};
 
 export default PipelineSampleReads;

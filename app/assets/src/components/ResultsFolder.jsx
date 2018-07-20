@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import React from "react";
 
 class ResultsFolder extends React.Component {
@@ -5,7 +6,7 @@ class ResultsFolder extends React.Component {
     super(props, context);
     this.fileUrl = props.filePath;
     this.filePath = this.fileUrl.split("/");
-    this.fileList = props.fileList;
+    this.fileList = props.fileList || [];
     this.sampleName = props.sampleName;
     this.projectName = props.projectName;
   }
@@ -26,7 +27,7 @@ class ResultsFolder extends React.Component {
             <span className="back" onClick={this.gotoPath.bind(this, "/")}>
               {this.filePath[0]}
             </span>
-            <span className="path">></span>
+            <span className="path">&gt;</span>
             <span
               className="back"
               onClick={this.gotoPath.bind(
@@ -81,5 +82,12 @@ class ResultsFolder extends React.Component {
     );
   }
 }
+
+ResultsFolder.propTypes = {
+  filePath: PropTypes.string.isRequired,
+  fileList: PropTypes.array,
+  sampleName: PropTypes.string,
+  projectName: PropTypes.string
+};
 
 export default ResultsFolder;

@@ -1,8 +1,7 @@
-import React from "react";
 import axios from "axios";
-import $ from "jquery";
-import Samples from "./Samples";
+import PropTypes from "prop-types";
 import Nanobar from "nanobar";
+import React from "react";
 
 /**
  @class ProjectSelection
@@ -170,7 +169,7 @@ class ProjectSelection extends React.Component {
     let id = e.target.getAttribute("data-id");
     let listType = e.target.getAttribute("data-type") || null;
     this.props.selectProject(id, listType);
-    this.state.selectedProjectId = id;
+    this.setState({ selectedProjectId: id });
   }
 
   renderProjectSection() {
@@ -190,9 +189,9 @@ class ProjectSelection extends React.Component {
     let favProjects = this.state.formattedFavProjectList.sort(sortLogic);
     if (this.state.showLessFavorites) favProjects = favProjects.slice(0, 4);
 
-    var fav_section = <div />;
+    var favSection = <div />;
     if (favProjects.length) {
-      fav_section = (
+      favSection = (
         <div className="row fav-row">
           <div className="title fav-title">Favorite Projects</div>
           <div className="fav-projects-wrapper projects-wrapper">
@@ -201,7 +200,7 @@ class ProjectSelection extends React.Component {
                 <ProjectInSelector
                   parent={this}
                   project={project}
-                  i={i}
+                  key={i}
                   favorite={true}
                 />
               );
@@ -258,7 +257,7 @@ class ProjectSelection extends React.Component {
       .filter(project => !project.favorited);
     if (this.state.showLess) ProjectList = ProjectList.slice(0, 8);
 
-    const all_projects_section = (
+    const allProjectsSection = (
       <div className="projects">
         <div data-title="allprojects" className="title">
           All Projects
@@ -272,7 +271,7 @@ class ProjectSelection extends React.Component {
                 <ProjectInSelector
                   parent={this}
                   project={project}
-                  i={i}
+                  key={i}
                   favorite={false}
                 />
               );
@@ -301,8 +300,8 @@ class ProjectSelection extends React.Component {
               </div>
             </div>
           </div>
-          {fav_section}
-          {all_projects_section}
+          {favSection}
+          {allProjectsSection}
         </div>
       </div>
     );
@@ -312,4 +311,12 @@ class ProjectSelection extends React.Component {
     return <div>{this.renderProjectSection()}</div>;
   }
 }
+
+ProjectSelection.propTypes = {
+  csrf: PropTypes.string.isRequired,
+  favoriteProjects: PropTypes.array,
+  allProjects: PropTypes.array,
+  selectProject: PropTypes.func.isRequired
+};
+
 export default ProjectSelection;

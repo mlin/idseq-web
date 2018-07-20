@@ -1,6 +1,7 @@
 import axios from "axios";
-import React from "react";
 import AccessionViz from "./AccessionViz";
+import React from "react";
+import PropTypes from "prop-types";
 
 class AlignmentViz extends React.Component {
   constructor(props) {
@@ -18,7 +19,7 @@ class AlignmentViz extends React.Component {
     };
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchAlignmentData();
   }
 
@@ -65,5 +66,14 @@ class AlignmentViz extends React.Component {
     );
   }
 }
+
+AlignmentViz.propTypes = {
+  sampleId: PropTypes.number,
+  alignmentQuery: PropTypes.string,
+  taxId: PropTypes.number,
+  taxLevel: PropTypes.string,
+  taxName: PropTypes.string,
+  readsPerPage: PropTypes.number
+};
 
 export default AlignmentViz;

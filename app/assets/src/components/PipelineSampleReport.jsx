@@ -1,18 +1,17 @@
-import React from "react";
+import $ from "jquery";
 import axios from "axios";
 import Cookies from "js-cookie";
-import $ from "jquery";
+import PropTypes from "prop-types";
+import React from "react";
 import Tipsy from "react-tipsy";
 import ReactAutocomplete from "react-autocomplete";
 import { Dropdown, Label, Menu, Icon, Popup } from "semantic-ui-react";
 import numberWithCommas from "../helpers/strings";
-import LabeledDropdown from "./modules/LabeledDropdown";
 import AdvancedThresholdFilterDropdown from "./modules/AdvancedThresholdFilter";
 import StringHelper from "../helpers/StringHelper";
 import ThresholdMap from "./utils/ThresholdMap";
 import PipelineSampleTree from "./PipelineSampleTree";
 import Nanobar from "nanobar";
-import d3, { event as currentEvent } from "d3";
 import BasicPopup from "./BasicPopup";
 
 class PipelineSampleReport extends React.Component {
@@ -22,8 +21,8 @@ class PipelineSampleReport extends React.Component {
       id: "prog-bar",
       class: "prog-bar"
     });
-    this.report_ts = props.report_ts;
-    this.sample_id = props.sample_id;
+    this.reportTs = props.report_ts;
+    this.sampleId = props.sample_id;
     this.gitVersion = props.git_version;
     this.canSeeAlignViz = props.can_see_align_viz;
     this.can_edit = props.can_edit;
@@ -34,11 +33,11 @@ class PipelineSampleReport extends React.Component {
     this.all_backgrounds = props.all_backgrounds;
     this.max_rows_to_render = props.max_rows || 1500;
     this.default_sort_by = "nt_aggregatescore";
-    const cached_cats = Cookies.get("excluded_categories");
-    const cached_exclude_subcats = Cookies.get("exclude_subcats");
-    const cached_name_type = Cookies.get("name_type");
+    const cachedCats = Cookies.get("excluded_categories");
+    const cachedExcludeSubcats = Cookies.get("exclude_subcats");
+    const cachedNameType = Cookies.get("name_type");
     const savedThresholdFilters = ThresholdMap.getSavedThresholdFilters();
-    this.category_child_parent = { Phage: "Viruses" };
+    this.categoryChildParent = { Phage: "Viruses" };
     this.showConcordance = false;
     // TODO: move thresholds to server side
     this.allThresholds = [
@@ -54,7 +53,7 @@ class PipelineSampleReport extends React.Component {
       { name: "NR %id", value: "NR_percentidentity" },
       { name: "R log(1/e)", value: "NR_neglogevalue" }
     ];
-    this.genus_map = {};
+    this.genusMap = {};
 
     this.INVALID_CALL_BASE_TAXID = -1e8;
 
@@ -92,11 +91,11 @@ class PipelineSampleReport extends React.Component {
       selected_taxons_top: [],
       pagesRendered: 0,
       sort_by: this.default_sort_by,
-      excluded_categories: cached_cats ? JSON.parse(cached_cats) : [],
-      exclude_subcats: cached_exclude_subcats
-        ? JSON.parse(cached_exclude_subcats)
+      excluded_categories: cachedCats ? JSON.parse(cachedCats) : [],
+      exclude_subcats: cachedExcludeSubcats
+        ? JSON.parse(cachedExcludeSubcats)
         : [],
-      name_type: cached_name_type ? cached_name_type : "Scientific Name",
+      name_type: cachedNameType ? cachedNameType : "Scientific Name",
       search_taxon_id: 0,
       rendering: false,
       loading: true,
@@ -129,15 +128,18 @@ class PipelineSampleReport extends React.Component {
     this.getBackgroundIdByName = this.getBackgroundIdByName.bind(this);
   }
 
-  componentWillUpdate(nextProps, nextState) {
+  UNSAFE_componentWillUpdate(nextProps, nextState) {
+    console.log("UNSAFE_componentWillUpdate");
+    // this.setState({rendering: true});
     this.state.rendering = true;
   }
 
   componentDidUpdate(prevProps, prevState) {
-    this.state.rendering = false;
+    console.log("componentDidUpdate");
+    this.setState({ rendering: false });
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     // Fill in URL parameters for usability and specifying data to fetch.
     this.fillUrlParams();
     // Fetch the actual report data via axios calls to fill in the page.
@@ -176,16 +178,16 @@ class PipelineSampleReport extends React.Component {
   fetchSearchList() {
     axios
       .get(
-        `/samples/${this.sample_id}/search_list?report_ts=${
-          this.report_ts
+        `/samples/${this.sampleId}/search_list?report_ts=${
+          this.reportTs
         }&version=${this.gitVersion}`
       )
       .then(res => {
-        const search_list = res.data.search_list;
-        search_list.splice(0, 0, ["Show All", 0]);
+        const searchList = res.data.searchList;
+        searchList.splice(0, 0, ["Show All", 0]);
         this.setState({
           lineage_map: res.data.lineage_map,
-          search_keys_in_sample: search_list
+          search_keys_in_sample: searchList
         });
       });
   }
@@ -195,20 +197,20 @@ class PipelineSampleReport extends React.Component {
   fetchReportData() {
     this.nanobar.go(30);
     let params = `?${window.location.search.replace("?", "")}&report_ts=${
-      this.report_ts
+      this.reportTs
     }&version=${this.gitVersion}`;
-    axios.get(`/samples/${this.sample_id}/report_info${params}`).then(res => {
+    axios.get(`/samples/${this.sampleId}/report_info${params}`).then(res => {
       this.nanobar.go(100);
-      const genus_map = {};
+      const genusMap = {};
       for (let i = 0; i < res.data.taxonomy_details[2].length; i++) {
         const taxon = res.data.taxonomy_details[2][i];
         if (taxon.genus_taxid == taxon.tax_id) {
-          genus_map[taxon.genus_taxid] = taxon;
+          genusMap[taxon.genus_taxid] = taxon;
         }
       }
-      // The genus_map never changes, so we move it out from the react state,
+      // The genusMap never changes, so we move it out from the react state,
       // to reduce performance cost.
-      this.genus_map = genus_map;
+      this.genusMap = genusMap;
       this.setState(
         {
           rows_passing_filters: res.data.taxonomy_details[0],
@@ -499,7 +501,7 @@ class PipelineSampleReport extends React.Component {
   // TODO(yf): fix this
   applySort(sort_by) {
     if (sort_by.toLowerCase() != this.state.sort_by) {
-      this.state.sort_by = sort_by.toLowerCase();
+      this.setState({ sort_by: this.state.sort_by.toLowerCase() });
       this.sortResults();
     }
   }
@@ -507,8 +509,8 @@ class PipelineSampleReport extends React.Component {
   sortCompareFunction(a, b) {
     const [ptype, pmetric] = this.sortParams.primary;
     const [stype, smetric] = this.sortParams.secondary;
-    const genus_a = this.genus_map[a.genus_taxid];
-    const genus_b = this.genus_map[b.genus_taxid];
+    const genus_a = this.genusMap[a.genus_taxid];
+    const genus_b = this.genusMap[b.genus_taxid];
 
     const genus_a_p_val = parseFloat(genus_a[ptype][pmetric]);
     const genus_a_s_val = parseFloat(genus_a[stype][smetric]);
@@ -581,7 +583,7 @@ class PipelineSampleReport extends React.Component {
 
   displayedSubcats(excludeSubcats) {
     let displayed_subcats = [];
-    let all_subcats = Object.keys(this.category_child_parent);
+    let all_subcats = Object.keys(this.categoryChildParent);
     for (let subcat of all_subcats) {
       if (excludeSubcats.indexOf(subcat) == -1) {
         displayed_subcats.push(subcat);
@@ -606,10 +608,10 @@ class PipelineSampleReport extends React.Component {
     }
     // Also update subcategory to match category
     let new_exclude_subcats = this.state.exclude_subcats;
-    let subcats = Object.keys(this.category_child_parent);
+    let subcats = Object.keys(this.categoryChildParent);
     for (let i = 0; i < subcats.length; i++) {
       let subcat = subcats[i];
-      let parent = this.category_child_parent[subcat];
+      let parent = this.categoryChildParent[subcat];
       let parent_excluded = excluded_categories.indexOf(parent) >= 0;
       if (parent_excluded) {
         //subcat should be excluded
@@ -681,12 +683,16 @@ class PipelineSampleReport extends React.Component {
       selected_taxons_top: selected_taxons.slice(0, this.max_rows_to_render),
       pagesRendered: 1
     });
-    this.state.thresholded_taxons = this.state.thresholded_taxons.sort(
-      this.sortCompareFunction
-    );
-    this.state.taxonomy_details = this.state.taxonomy_details.sort(
-      this.sortCompareFunction
-    );
+    this.setState({
+      thresholded_taxons: this.state.thresholded_taxons.sort(
+        this.sortCompareFunction
+      )
+    });
+    this.setState({
+      taxonomy_details: this.state.taxonomy_details.sort(
+        this.sortCompareFunction
+      )
+    });
   }
 
   setThresholdProperty(index, property, value) {
@@ -836,7 +842,7 @@ class PipelineSampleReport extends React.Component {
     const taxLevel = e.target.getAttribute("data-tax-level");
     const taxId = e.target.getAttribute("data-tax-id");
     location.href = `/samples/${
-      this.sample_id
+      this.sampleId
     }/fasta/${taxLevel}/${taxId}/NT_or_NR`;
   }
 
@@ -844,14 +850,14 @@ class PipelineSampleReport extends React.Component {
     const taxId = e.target.getAttribute("data-tax-id");
     const taxLevel = e.target.getAttribute("data-tax-level");
     window.open(
-      `/samples/${this.sample_id}/alignment_viz/nt_${taxLevel}_${taxId}`,
+      `/samples/${this.sampleId}/alignment_viz/nt_${taxLevel}_${taxId}`,
       "_blank"
     );
   }
 
   downloadAssemblyLink(e) {
     const taxId = e.target.getAttribute("data-tax-id");
-    location.href = `/samples/${this.sample_id}/assembly/${taxId}`;
+    location.href = `/samples/${this.sampleId}/assembly/${taxId}`;
   }
 
   displayTags(taxInfo, reportDetails) {
@@ -1277,6 +1283,7 @@ class PipelineSampleReport extends React.Component {
   }
 
   render() {
+    console.log("render PipelineSampleReport");
     const filter_stats = `${
       this.state.rows_passing_filters
     } rows passing filters, out of ${this.state.rows_total} total rows.`;
@@ -1304,7 +1311,7 @@ class PipelineSampleReport extends React.Component {
         Clear All
       </span>
     ) : null;
-    const filter_row_stats = this.state.loading ? null : (
+    const filterRowStats = this.state.loading ? null : (
       <div id="filter-message" className="filter-message">
         <span className="count">
           {filter_stats} {truncation_stats} {subsampling_stats}{" "}
@@ -1313,7 +1320,7 @@ class PipelineSampleReport extends React.Component {
       </div>
     );
 
-    const advanced_filter_tag_list = this.state.activeThresholds.map(
+    const advancedFilterTagList = this.state.activeThresholds.map(
       (threshold, i) => (
         <AdvancedFilterTagList
           threshold={threshold}
@@ -1324,7 +1331,7 @@ class PipelineSampleReport extends React.Component {
       )
     );
 
-    const categories_filter_tag_list = this.displayedCategories(
+    const categoriesFilterTagList = this.displayedCategories(
       this.state.excluded_categories
     ).map((category, i) => {
       return (
@@ -1341,7 +1348,7 @@ class PipelineSampleReport extends React.Component {
       );
     });
 
-    const subcats_filter_tag_list = this.displayedSubcats(
+    const subcatsFilterTagList = this.displayedSubcats(
       this.state.exclude_subcats
     ).map((subcat, i) => {
       return (
@@ -1360,16 +1367,33 @@ class PipelineSampleReport extends React.Component {
 
     return (
       <RenderMarkup
-        filter_row_stats={filter_row_stats}
-        advanced_filter_tag_list={advanced_filter_tag_list}
-        categories_filter_tag_list={categories_filter_tag_list}
-        subcats_filter_tag_list={subcats_filter_tag_list}
+        filterRowStats={filterRowStats}
+        advancedFilterTagList={advancedFilterTagList}
+        categoriesFilterTagList={categoriesFilterTagList}
+        subcatsFilterTagList={subcatsFilterTagList}
         view={this.state.view}
         parent={this}
       />
     );
   }
 }
+
+PipelineSampleReport.propTypes = {
+  all_backgrounds: PropTypes.array,
+  all_categories: PropTypes.array,
+  can_edit: PropTypes.bool,
+  can_see_align_viz: PropTypes.bool,
+  csrf: PropTypes.string,
+  git_version: PropTypes.string,
+  gsnapFilterStatus: PropTypes.string,
+  max_rows: PropTypes.number,
+  report_details: PropTypes.object,
+  refreshPage: PropTypes.func,
+  report_ts: PropTypes.string,
+  reportPageParams: PropTypes.object,
+  sample_id: PropTypes.number,
+  toggleHighlightTaxon: PropTypes.func
+};
 
 function CollapseExpand({ tax_info, parent }) {
   const fake_or_real = tax_info.genus_taxid < 0 ? "fake-genus" : "real-genus";
@@ -1398,6 +1422,11 @@ function CollapseExpand({ tax_info, parent }) {
     </span>
   );
 }
+
+CollapseExpand.propTypes = {
+  tax_info: PropTypes.object,
+  parent: PropTypes.object
+};
 
 function AdvancedFilterTagList({ threshold, i, parent }) {
   if (ThresholdMap.isThresholdValid(threshold)) {
@@ -1556,19 +1585,26 @@ function ReportTableHeader({ parent }) {
     </div>
   );
 }
+
+ReportTableHeader.propTypes = {
+  parent: PropTypes.object
+};
+
 function CategoryFilter({ parent }) {
   let count =
     parent.all_categories.length -
     parent.state.excluded_categories.length +
-    Object.keys(parent.category_child_parent).length -
+    Object.keys(parent.categoryChildParent).length -
     parent.state.exclude_subcats.length;
   return (
     <Dropdown
       className="filter-btn category-filter-dropdown"
-      text={
-        <span>
-          Categories <Label>{count}</Label>
-        </span>
+      trigger={
+        <div className="text">
+          <span>
+            Categories <Label>{count}</Label>
+          </span>
+        </div>
       }
     >
       <Dropdown.Menu>
@@ -1600,7 +1636,7 @@ function CategoryFilter({ parent }) {
             <div className="divider" />
             <br />
 
-            {Object.keys(parent.category_child_parent).map((subcat, i) => {
+            {Object.keys(parent.categoryChildParent).map((subcat, i) => {
               return (
                 <li key={`subcat_check_${i}`}>
                   <input
@@ -1615,14 +1651,14 @@ function CategoryFilter({ parent }) {
                     checked={parent.state.exclude_subcats.indexOf(subcat) == -1}
                   />
                   <label htmlFor={subcat}>
-                    {subcat} (part of {parent.category_child_parent[subcat]})
+                    {subcat} (part of {parent.categoryChildParent[subcat]})
                   </label>
                 </li>
               );
             })}
           </ul>
           {parent.all_categories.length +
-            Object.keys(parent.category_child_parent).length <
+            Object.keys(parent.categoryChildParent).length <
           1 ? (
             <p>None found</p>
           ) : null}
@@ -1631,6 +1667,10 @@ function CategoryFilter({ parent }) {
     </Dropdown>
   );
 }
+
+CategoryFilter.propTypes = {
+  parent: PropTypes.object
+};
 
 function ReportSearchBox({ parent }) {
   return (
@@ -1666,6 +1706,10 @@ function ReportSearchBox({ parent }) {
   );
 }
 
+ReportSearchBox.propTypes = {
+  parent: PropTypes.object
+};
+
 function NameTypeFilter({ parent }) {
   return (
     <Dropdown
@@ -1687,6 +1731,10 @@ function NameTypeFilter({ parent }) {
     </Dropdown>
   );
 }
+
+NameTypeFilter.propTypes = {
+  parent: PropTypes.object
+};
 
 function BackgroundModelFilter({ parent }) {
   return (
@@ -1722,6 +1770,10 @@ function BackgroundModelFilter({ parent }) {
   );
 }
 
+BackgroundModelFilter.propTypes = {
+  parent: PropTypes.object
+};
+
 class RenderMarkup extends React.Component {
   constructor(props) {
     super(props);
@@ -1732,7 +1784,7 @@ class RenderMarkup extends React.Component {
     this._nodeTextClicked = this.nodeTextClicked.bind(this);
   }
 
-  componentWillReceiveProps(newProps) {
+  UNSAFE_componentWillReceiveProps(newProps) {
     if (newProps.view && this.state.view != newProps.view) {
       this.setState({ view: newProps.view });
     }
@@ -1802,10 +1854,10 @@ class RenderMarkup extends React.Component {
 
   render() {
     const {
-      filter_row_stats,
-      advanced_filter_tag_list,
-      categories_filter_tag_list,
-      subcats_filter_tag_list,
+      filterRowStats,
+      advancedFilterTagList,
+      categoriesFilterTagList,
+      subcatsFilterTagList,
       parent
     } = this.props;
     return (
@@ -1836,10 +1888,10 @@ class RenderMarkup extends React.Component {
                   </div>
                   {this.renderMenu()}
                   <div className="filter-tags-list">
-                    {advanced_filter_tag_list} {categories_filter_tag_list}{" "}
-                    {subcats_filter_tag_list}
+                    {advancedFilterTagList} {categoriesFilterTagList}{" "}
+                    {subcatsFilterTagList}
                   </div>
-                  {filter_row_stats}
+                  {filterRowStats}
                 </div>
                 {this.state.view == "table" && (
                   <ReportTableHeader parent={parent} />
@@ -1853,5 +1905,14 @@ class RenderMarkup extends React.Component {
     );
   }
 }
+
+// RenderMarkup.propTypes = {
+//   view: PropTypes.string,
+//   parent: PropTypes.object,
+//   filterRowStats: PropTypes.element,
+//   advancedFilterTagList: PropTypes.array,
+//   categoriesFilterTagList: PropTypes.array,
+//   subcatsFilterTagList: PropTypes.array
+// }
 
 export default PipelineSampleReport;

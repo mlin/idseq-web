@@ -1,7 +1,8 @@
+import $ from "jquery";
+import axios from "axios";
+import PropTypes from "prop-types";
 import React from "react";
 import ReactDOM from "react-dom";
-import axios from "axios";
-import $ from "jquery";
 import Tipsy from "react-tipsy";
 import IconComponent from "./IconComponent";
 import ObjectHelper from "../helpers/ObjectHelper";
@@ -113,6 +114,7 @@ class SampleUpload extends React.Component {
     );
     this.initializeTooltip();
   }
+
   initializeTooltip() {
     // only updating the tooltip offset when the component is loaded
     $(() => {
@@ -566,7 +568,7 @@ class SampleUpload extends React.Component {
           <span>
             I agree that the data I am uploading to IDseq has been lawfully
             collected and that I have all necessary consent and authorization to
-            upload it for the purposes outlined in IDseq's&nbsp;
+            upload it for the purposes outlined in IDseq&apos;s&nbsp;
           </span>
           <a
             href="https://s3-us-west-2.amazonaws.com/idseq-database/Terms.pdf"
@@ -1060,4 +1062,15 @@ class SampleUpload extends React.Component {
     return <div>{this.renderSampleForm(this.props.selectedSample)}</div>;
   }
 }
+
+SampleUpload.propTypes = {
+  csrf: PropTypes.string,
+  host_genomes: PropTypes.array,
+  inputFiles: PropTypes.array,
+  loggedin_user: PropTypes.object,
+  projects: PropTypes.array,
+  projectInfo: PropTypes.object,
+  selectedSample: PropTypes.string
+};
+
 export default SampleUpload;

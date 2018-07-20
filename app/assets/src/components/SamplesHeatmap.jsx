@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import React from "react";
 import clusterfck from "clusterfck";
 import axios from "axios";
@@ -726,19 +727,19 @@ class SamplesHeatmap extends React.Component {
       let id = this.state.taxons.nameToId[name];
       let category = this.state.taxons.idToCategory[id];
       if (categories.has(category)) {
-        let has_value = false;
+        let hasValue = false;
         for (let sample of this.state.data) {
           for (let taxon of sample.taxons) {
             if (taxon.tax_id == id) {
-              has_value = true;
+              hasValue = true;
               break;
             }
           }
-          if (has_value) {
+          if (hasValue) {
             break;
           }
         }
-        if (has_value) {
+        if (hasValue) {
           filteredNames.push(name);
         }
       }
@@ -821,5 +822,16 @@ class SamplesHeatmap extends React.Component {
     );
   }
 }
+
+SamplesHeatmap.propTypes = {
+  metrics: PropTypes.array.isRequired,
+  categories: PropTypes.array.isRequired,
+  backgrounds: PropTypes.array.isRequired,
+  taxonLevels: PropTypes.object.isRequired,
+  advancedFilters: PropTypes.array.isRequired,
+  sampleIds: PropTypes.array,
+  taxonIds: PropTypes.array,
+  explicitApply: PropTypes.bool
+};
 
 export default SamplesHeatmap;

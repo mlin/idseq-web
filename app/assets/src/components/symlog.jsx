@@ -2,7 +2,7 @@
 import d3 from "d3";
 
 export default function genericLog() {
-  return (function d3_scale_genericLog(logScale) {
+  return (function d3ScaleGenericLog(logScale) {
     let scales = [];
     let domainParts = [];
     let eps = 0.1;
@@ -402,7 +402,7 @@ export default function genericLog() {
     };
 
     scale.copy = function() {
-      return d3_scale_genericLog(logScale)
+      return d3ScaleGenericLog(logScale)
         .domain(domain)
         .range(range)
         .delta(delta)

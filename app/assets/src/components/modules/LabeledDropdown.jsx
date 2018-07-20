@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { Dropdown } from "semantic-ui-react";
 
 class LabeledDropdown extends React.Component {
@@ -35,4 +36,12 @@ class LabeledDropdown extends React.Component {
     );
   }
 }
+
+LabeledDropdown.propTypes = {
+  label: PropTypes.string,
+  onChange: PropTypes.func,
+  options: PropTypes.array,
+  value: PropTypes.string
+};
+
 export default LabeledDropdown;

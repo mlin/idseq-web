@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Button, Dropdown, Icon, Input, Label, Popup } from "semantic-ui-react";
 import ThresholdMap from "../utils/ThresholdMap";
+import update from "react-addons-update";
 
 class AdvancedThresholdFilterRow extends React.Component {
   constructor(props) {
@@ -113,6 +114,14 @@ class AdvancedThresholdFilterRow extends React.Component {
   }
 }
 
+AdvancedThresholdFilterRow.propTypes = {
+  filter: PropTypes.object,
+  labels: PropTypes.array,
+  onChange: PropTypes.func,
+  onRemove: PropTypes.func,
+  operators: PropTypes.array
+};
+
 class AdvancedThresholdFilter extends React.Component {
   constructor(props) {
     super(props);
@@ -149,7 +158,9 @@ class AdvancedThresholdFilter extends React.Component {
   }
 
   rowChanged(data, i) {
-    this.state.filters[i] = data;
+    this.setState({
+      filters: update(this.state.filters, { i: data })
+    });
     this.setState({ filters: this.state.filters });
     this.props.onChange(this.state.filters);
   }
@@ -198,9 +209,11 @@ class AdvancedThresholdFilter extends React.Component {
 }
 
 AdvancedThresholdFilter.propTypes = {
+  filters: PropTypes.array,
   labels: PropTypes.array.isRequired,
-  operators: PropTypes.array.isRequired,
-  filters: PropTypes.array
+  onApply: PropTypes.func,
+  onChange: PropTypes.func,
+  operators: PropTypes.array.isRequired
 };
 
 class AdvancedThresholdFilterDropdown extends React.Component {
@@ -231,11 +244,16 @@ class AdvancedThresholdFilterDropdown extends React.Component {
         validFilters.push(filter);
       }
     }
+
+    // let dropdownProps, onApply;
+    // const dropdownProps = Object.assign({}, this.props);
+    // delete dropdownProps.onApply;
+    const { onApply, ...dropdownProps } = this.props;
     return (
       <Popup
         trigger={
           <Dropdown
-            fluid={this.props.fluid}
+            {...this.dropdownProps}
             className="active-threshold-filter-dropdown"
             trigger={
               <span>
@@ -262,12 +280,14 @@ class AdvancedThresholdFilterDropdown extends React.Component {
   }
 }
 AdvancedThresholdFilterDropdown.propTypes = {
-  labels: PropTypes.array.isRequired,
-  operators: PropTypes.array.isRequired,
+  applyOnHide: PropTypes.bool,
+  disabled: PropTypes.bool,
   filters: PropTypes.array,
+  fluid: PropTypes.bool,
+  label: PropTypes.string,
+  labels: PropTypes.array.isRequired,
   onChange: PropTypes.func,
-  onApply: PropTypes.func,
-  applyOnHide: PropTypes.bool
+  operators: PropTypes.array.isRequired
 };
 
 export default AdvancedThresholdFilterDropdown;

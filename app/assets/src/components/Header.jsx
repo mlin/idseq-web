@@ -1,8 +1,8 @@
+import PropTypes from "prop-types";
 import React from "react";
 import $ from "jquery";
 import axios from "axios";
 import { Dropdown } from "semantic-ui-react";
-import SampleUpload from "./SampleUpload";
 
 class Header extends React.Component {
   constructor(props, context) {
@@ -88,7 +88,7 @@ class Header extends React.Component {
               </p>
               <p>
                 Avoid copying commands into programs like TextEdit because it
-                may change "straight quotes" into
+                may change &quot;straight quotes&quot; into
               </p>
               <p>
                 “smart quotes” (“ ‘ ’ ”) which will not be parsed correctly in
@@ -99,11 +99,11 @@ class Header extends React.Component {
             <p>3. Upload a sample using a command of the form:</p>
             <div className="code center-code">
               <p>
-                idseq -p '<span className="code-to-edit">
+                idseq -p &apos;<span className="code-to-edit">
                   Your Project Name
-                </span>' -s '<span className="code-to-edit">
+                </span>&apos; -s &apos;<span className="code-to-edit">
                   Your Sample Name
-                </span>' \
+                </span>&apos; \
                 <br /> -u https://idseq.net -e{" "}
                 <span className="code-personal">
                   {this.userDetails.email}
@@ -123,9 +123,9 @@ class Header extends React.Component {
             </p>
             <div className="code center-code">
               <p>
-                idseq -p '<span className="code-to-edit">
+                idseq -p &apos;<span className="code-to-edit">
                   Your Project Name
-                </span>' \
+                </span>&apos; \
                 <br /> -u https://idseq.net -e{" "}
                 <span className="code-personal">
                   {this.userDetails.email}
@@ -140,19 +140,24 @@ class Header extends React.Component {
             <div className="divider" />
             <br />
             <p>
-              By default, the host genome to be subtracted out is "Human".<br />
+              By default, the host genome to be subtracted out is
+              &quot;Human&quot;.<br />
               You can change it by adding{" "}
               <span className="code">
                 --host_genome_name{" "}
-                <span className="code-to-edit">'Your Chosen Host'</span>
+                <span className="code-to-edit">
+                  &apos;Your Chosen Host&apos;
+                </span>
               </span>{" "}
               to the command.<br />
               Current possibilities for{" "}
-              <span className="code-to-edit">'Your Chosen Host'</span>:<br />
+              <span className="code-to-edit">
+                &apos;Your Chosen Host&apos;
+              </span>:<br />
               {host_genome_names
                 .map((hgn, i) => (
                   <span className="code-personal" key={i}>
-                    '{hgn}'
+                    &apos;{hgn}&apos;
                   </span>
                 ))
                 .reduce((prev, curr) => [prev, " / ", curr])}.
@@ -250,4 +255,13 @@ class Header extends React.Component {
   }
 }
 
+Header.propTypes = {
+  demoUser: PropTypes.number,
+  host_genome_names: PropTypes.array,
+  signoutEndpoint: PropTypes.string,
+  signInEndpoint: PropTypes.string,
+  user_auth_token: PropTypes.string,
+  userDetails: PropTypes.object,
+  userSignedIn: PropTypes.bool
+};
 export default Header;

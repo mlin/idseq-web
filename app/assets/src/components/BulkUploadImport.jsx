@@ -5,6 +5,7 @@ import $ from "jquery";
 import Tipsy from "react-tipsy";
 import SampleUpload from "./SampleUpload";
 import ObjectHelper from "../helpers/ObjectHelper";
+import PropTypes from "prop-types";
 
 class BulkUploadImport extends React.Component {
   constructor(props, context) {
@@ -660,7 +661,7 @@ class BulkUploadImport extends React.Component {
           <span>
             I agree that the data I am uploading to IDseq has been lawfully
             collected and that I have all necessary consent and authorization to
-            upload it for the purposes outlined in IDseq's&nbsp;
+            upload it for the purposes outlined in IDseq&apos;s&nbsp;
           </span>
           <a
             href="https://s3-us-west-2.amazonaws.com/idseq-database/Terms.pdf"
@@ -938,8 +939,8 @@ class BulkUploadImport extends React.Component {
                             extensions to be considered:<br />
                             fastq.gz / fq.gz / fastq / fq / fasta.gz / fa.gz /
                             fasta / fa.<br />
-                            Paired files must be labeled "_R1" or "_R2" at the
-                            end of the basename.
+                            Paired files must be labeled &quot;_R1&quot; or
+                            &quot;_R2&quot; at the end of the basename.
                           </i>
                         </div>
                         <div className="example-link">
@@ -999,5 +1000,12 @@ class BulkUploadImport extends React.Component {
     );
   }
 }
+
+BulkUploadImport.propTypes = {
+  host_genomes: PropTypes.array,
+  csrf: PropTypes.string,
+  loggedin_user: PropTypes.object,
+  projects: PropTypes.array
+};
 
 export default BulkUploadImport;

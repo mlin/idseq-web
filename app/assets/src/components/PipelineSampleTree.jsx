@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import React from "react";
 import d3, { event as currentEvent } from "d3";
 import LabeledDropdown from "./modules/LabeledDropdown";
@@ -16,7 +17,7 @@ class PipelineSampleTree extends React.PureComponent {
   }
 
   makeTree() {
-    let make_node = function(id, name, level) {
+    let makeNode = function(id, name, level) {
       let data = {};
       for (let dataType of this.dataTypes) {
         data[dataType] = 0;
@@ -30,12 +31,12 @@ class PipelineSampleTree extends React.PureComponent {
         id: id
       };
     };
-    make_node = make_node.bind(this);
+    makeNode = makeNode.bind(this);
 
     let rows = this.props.taxons;
-    let nodes_by_id = {};
+    let nodesById = {};
 
-    let root = make_node(-12345, "", "");
+    let root = makeNode(-12345, "", "");
     let tree = root;
 
     let order = [
@@ -62,12 +63,12 @@ class PipelineSampleTree extends React.PureComponent {
 
       tree = root;
 
-      let has_categorization =
+      let hasCategorization =
         order.filter(function(level) {
           return row.lineage && row.lineage[level + "_taxid"] >= 0;
         }).length > 1;
 
-      if (!row.lineage || !has_categorization) {
+      if (!row.lineage || !hasCategorization) {
         row.lineage = {
           genus_taxid: -9,
           genus_name: "Uncategorized",
@@ -77,7 +78,7 @@ class PipelineSampleTree extends React.PureComponent {
       }
       for (let j = 0; j < order.length; j += 1) {
         let level = order[j],
-          taxon_id = row.lineage[level + "_taxid"],
+          taxonId = row.lineage[level + "_taxid"],
           name;
 
         if (this.props.nameType == "Common name") {
@@ -92,18 +93,18 @@ class PipelineSampleTree extends React.PureComponent {
           continue;
         }
 
-        if (!nodes_by_id[taxon_id]) {
-          let node = make_node(taxon_id, name, level);
+        if (!nodesById[taxonId]) {
+          let node = makeNode(taxonId, name, level);
           tree.children.push(node);
-          nodes_by_id[taxon_id] = node;
+          nodesById[taxonId] = node;
         }
 
-        nodes_by_id[taxon_id].name = nodes_by_id[taxon_id].name || name;
+        nodesById[taxonId].name = nodesById[taxonId].name || name;
         for (let dataType of this.dataTypes) {
           tree.data[dataType] += getValue(row, dataType);
         }
         tree.weight += getValue(row);
-        tree = nodes_by_id[taxon_id];
+        tree = nodesById[taxonId];
       }
       for (let dataType of this.dataTypes) {
         tree.data[dataType] += getValue(row, dataType);
@@ -187,6 +188,12 @@ class PipelineSampleTree extends React.PureComponent {
   }
 }
 
+PipelineSampleTree.propTypes = {
+  taxons: PropTypes.array,
+  nameType: PropTypes.string,
+  onNodeTextClicked: PropTypes.func
+};
+
 class TreeStructure extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -195,7 +202,8 @@ class TreeStructure extends React.PureComponent {
     this.i = 0;
     this.duration = 0;
   }
-  componentWillReceiveProps(nextProps) {
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
     this.duration = 0;
     this.autoCollapsed = false;
     this.update(nextProps, nextProps.tree);
@@ -210,17 +218,17 @@ class TreeStructure extends React.PureComponent {
     this.nodeContainer = this.svg.append("g");
   }
   update(props, source) {
-    let leaf_count = 0;
-    let to_visit = [props.tree];
-    let min_weight = 999999999;
+    let leafCount = 0;
+    let toVisit = [props.tree];
+    let minWeight = 999999999;
     let collapseScale = d3.scale
       .linear()
       .domain([0, props.tree.weight])
       .range([0, 10]);
 
-    while (to_visit.length) {
-      let node = to_visit.pop();
-      min_weight = Math.min(min_weight, node.weight);
+    while (toVisit.length) {
+      let node = toVisit.pop();
+      minWeight = Math.min(minWeight, node.weight);
       if (
         !this.autoCollapsed &&
         collapseScale(node.weight) < 2 &&
@@ -231,24 +239,24 @@ class TreeStructure extends React.PureComponent {
         node.children = null;
       }
       if (!(node.children && node.children.length)) {
-        leaf_count += 1;
+        leafCount += 1;
       } else {
-        to_visit = to_visit.concat(node.children);
+        toVisit = toVisit.concat(node.children);
       }
     }
     let circleScale = d3.scale
       .linear()
-      .domain([min_weight, props.tree.weight])
+      .domain([minWeight, props.tree.weight])
       .range([2, 20]);
 
     let linkScale = d3.scale
       .linear()
-      .domain([min_weight, props.tree.weight])
+      .domain([minWeight, props.tree.weight])
       .range([1, 20]);
 
     this.autoCollapsed = true;
     let width = 1000,
-      height = Math.max(300, 25 * leaf_count);
+      height = Math.max(300, 25 * leafCount);
 
     let margin = {
       top: 20,
@@ -299,7 +307,7 @@ class TreeStructure extends React.PureComponent {
         return d.target.id;
       });
 
-    let pathsEnter = paths
+    paths
       .enter()
       .append("path")
       .attr("class", "link")
@@ -311,7 +319,7 @@ class TreeStructure extends React.PureComponent {
         return linkScale(d.target.weight);
       });
 
-    let pathsExit = paths
+    paths
       .exit()
       .transition()
       .duration(this.duration)
@@ -321,7 +329,7 @@ class TreeStructure extends React.PureComponent {
       })
       .remove();
 
-    let pathsUpdate = paths
+    paths
       .transition()
       .duration(this.duration)
       .attr("d", d => {
@@ -478,5 +486,11 @@ class TreeStructure extends React.PureComponent {
     );
   }
 }
+
+TreeStructure.propTypes = {
+  tree: PropTypes.object,
+  onNodeTextClicked: PropTypes.func,
+  getTooltip: PropTypes.func
+};
 
 export default PipelineSampleTree;

@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import React from "react";
 import { Dropdown, Label } from "semantic-ui-react";
 
@@ -70,4 +71,12 @@ class LabeledFilterDropdown extends React.Component {
     );
   }
 }
+
+LabeledFilterDropdown.propTypes = {
+  label: PropTypes.string,
+  onChange: PropTypes.func,
+  options: PropTypes.array,
+  value: PropTypes.array
+};
+
 export default LabeledFilterDropdown;

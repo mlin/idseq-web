@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import React from "react";
 import axios from "axios";
 import $ from "jquery";
@@ -98,7 +99,7 @@ class Login extends React.Component {
     this.setState({
       isChecked: checkboxValue
     });
-    this.state.isChecked = !this.state.isChecked;
+    this.setState({ isChecked: !this.state.isChecked });
   }
 
   sendMail() {
@@ -197,5 +198,10 @@ class Login extends React.Component {
     return <div>{this.renderLogin()}</div>;
   }
 }
+
+Login.propTypes = {
+  csrf: PropTypes.string,
+  endpoint: PropTypes.string
+};
 
 export default Login;
