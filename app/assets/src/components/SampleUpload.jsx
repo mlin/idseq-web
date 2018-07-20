@@ -22,6 +22,9 @@ class SampleUpload extends React.Component {
     this.handleMemoryChange = this.handleMemoryChange.bind(this);
     this.handleBranchChange = this.handleBranchChange.bind(this);
     this.handleResultChange = this.handleResultChange.bind(this);
+    this.handleAlignmentConfigNameChange = this.handleAlignmentConfigNameChange.bind(
+      this
+    );
     this.toggleNewProjectInput = this.toggleNewProjectInput.bind(this);
     this.projects = props.projects || [];
     this.project = props.projectInfo || "";
@@ -54,6 +57,7 @@ class SampleUpload extends React.Component {
       jobQueue: this.sample ? this.sample.job_queue : "",
       memory: this.sample ? this.sample.sample_memory : "",
       branch: this.sample ? this.sample.pipeline_branch : "",
+      alignmentConfigName: this.sample ? this.sample.alignment_config_name : "",
       id: this.sample.id || "",
       inputFiles:
         props.inputFiles && props.inputFiles.length ? props.inputFiles : [],
@@ -82,6 +86,7 @@ class SampleUpload extends React.Component {
       success: false,
       successMessage: "",
       serverErrors: [],
+      selectedAlignmentConfigName: this.selected.alignmentConfigName || null,
       selectedHostGenome: this.selected.hostGenome || "",
       selectedHostGenomeId: this.selected.hostGenomeId || null,
       selectedProject: this.selected.project || "",
@@ -258,6 +263,7 @@ class SampleUpload extends React.Component {
           pipeline_branch: this.state.selectedBranch,
           host_genome_id: this.state.selectedHostGenomeId,
           subsample: this.state.omitSubsamplingChecked ? 0 : 1,
+          alignment_config_name: this.state.selectedAlignmentConfigName,
           status: "created",
           client: "web"
         },
@@ -289,6 +295,7 @@ class SampleUpload extends React.Component {
     that.setState({
       submitting: true
     });
+
     axios
       .put(`/samples/${this.state.id}.json`, {
         sample: {
@@ -298,6 +305,7 @@ class SampleUpload extends React.Component {
           s3_preload_result_path: this.state.selectedResultPath,
           sample_memory: this.state.selectedMemory,
           pipeline_branch: this.state.selectedBranch,
+          alignment_config_name: this.state.selectedAlignmentConfigName,
           host_genome_id: this.state.selectedHostGenomeId
         },
         authenticity_token: this.csrf
@@ -468,6 +476,13 @@ class SampleUpload extends React.Component {
   handleBranchChange(e) {
     this.setState({
       selectedBranch: e.target.value.trim()
+    });
+    this.clearError();
+  }
+
+  handleAlignmentConfigNameChange(e) {
+    this.setState({
+      selectedAlignmentConfigName: e.target.value.trim()
     });
     this.clearError();
   }
@@ -989,6 +1004,33 @@ class SampleUpload extends React.Component {
                               {this.state.errors.memory}
                             </div>
                           ) : null}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="field">
+                      <div className="row">
+                        <div className="col no-padding s12">
+                          <div className="field-title">
+                            <div
+                              htmlFor="alignment_config_name"
+                              className="read-count-label"
+                            >
+                              Alignment Config Name. i.e. 2018-02-15
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="row input-row">
+                        <div className="col no-padding s12">
+                          <input
+                            id="alignment_config_name"
+                            type="text"
+                            className="browser-default"
+                            ref="alignment_config_name"
+                            value={this.state.selectedAlignmentConfigName}
+                            placeholder="2018-02-15"
+                            onChange={this.handleAlignmentConfigNameChange}
+                          />
                         </div>
                       </div>
                     </div>
