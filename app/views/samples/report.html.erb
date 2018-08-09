@@ -1,0 +1,8 @@
+<div id="SampleReport_page">
+</div>
+
+  <%= javascript_tag do %>
+    react_component('ReportView', {
+      csrf: '<%=form_authenticity_token %>',
+    }, 'SampleReport_page');
+  <% end %>
