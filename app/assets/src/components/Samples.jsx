@@ -16,6 +16,7 @@ import DownloadButtonDropdown from "./ui/controls/dropdowns/DownloadButtonDropdo
 import PrimaryButton from "./ui/controls/buttons/PrimaryButton";
 import SecondaryButton from "./ui/controls/buttons/SecondaryButton";
 import MultipleDropdown from "./ui/controls/dropdowns/MultipleDropdown";
+import PhyloTreeListModal from "./ui/modals/PhyloTreeListModal";
 
 class Samples extends React.Component {
   constructor(props, context) {
@@ -2037,7 +2038,7 @@ function ProjectInfoHeading({
         {compare_button}
         <BackgroundModal parent={parent} />
         {parent.admin ? (
-          <i className="fa fa-tree fa-5x" onClick={parent.gotoTreeList} />
+          <PhyloTreeListModal trigger={<i className="fa fa-tree fa-5x" />} />
         ) : null}
         {state.selectedProjectId &&
         canEditProject(state.selectedProjectId) &&
