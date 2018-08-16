@@ -1,6 +1,6 @@
 import axios from "axios";
 import React from "react";
-import { Input, Checkbox, Accordion, Menu } from "semantic-ui-react";
+import { Grid, Input, Checkbox, Accordion, Menu } from "semantic-ui-react";
 import PrimaryButton from "../../ui/controls/buttons/PrimaryButton";
 
 class PhyloTreeInputs extends React.Component {
@@ -227,9 +227,11 @@ class PhyloTreeInputs extends React.Component {
       <div>
         {title}
         {tree_name}
-        {sample_display_in_project}
-        {create_button}
-        {sample_display_outside_project}
+        <Grid columns={2}>
+          <Grid.Column>{sample_display_in_project}</Grid.Column>
+          <Grid.Column>{sample_display_outside_project}</Grid.Column>
+          {create_button}
+        </Grid>
       </div>
     );
   }
