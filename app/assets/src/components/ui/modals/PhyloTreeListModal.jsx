@@ -1,13 +1,10 @@
-import { Modal as BaseModal } from "semantic-ui-react";
+import Modal from "./Modal";
 import PropTypes from "prop-types";
 import React from "react";
 
-const PhyloTreeListModal = ({ trigger, header, content }) => (
-  <BaseModal trigger={trigger}>
-    <BaseModal.Header>{header}</BaseModal.Header>
-    <BaseModal.Content>{content}</BaseModal.Content>
-  </BaseModal>
-);
+const PhyloTreeListModal = ({ trigger, header, content }) => {
+  return <Modal trigger={trigger} header={header} content={content} />;
+};
 
 PhyloTreeListModal.propTypes = {
   trigger: PropTypes.element,

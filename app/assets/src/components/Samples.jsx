@@ -2043,6 +2043,8 @@ function ProjectInfoHeading({
                 <PhylogenyButton />
               </div>
             }
+            header="Header"
+            content={<div>Byeee</div>}
           />
         ) : null}
         {compare_button}
