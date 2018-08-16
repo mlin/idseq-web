@@ -18,6 +18,7 @@ import PrimaryButton from "./ui/controls/buttons/PrimaryButton";
 import SecondaryButton from "./ui/controls/buttons/SecondaryButton";
 import MultipleDropdown from "./ui/controls/dropdowns/MultipleDropdown";
 import PhyloTreeListModal from "./ui/modals/PhyloTreeListModal";
+import PhyloTreeList from "./views/phylo_tree/PhyloTreeList";
 
 class Samples extends React.Component {
   constructor(props, context) {
@@ -2044,7 +2045,7 @@ function ProjectInfoHeading({
               </div>
             }
             header="Header"
-            content={<div>Byeee</div>}
+            content={<PhyloTreeList />}
           />
         ) : null}
         {compare_button}

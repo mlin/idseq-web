@@ -8,18 +8,18 @@ class PhyloTreeList extends React.Component {
   }
   render() {
     let title = "Existing trees";
-    if (this.taxon.name) {
+    if (this.taxon && this.taxon.name) {
       title +=
         " for " + this.taxon.name + " (taxon ID " + this.taxon.taxid + ")";
     }
-    if (this.project.name) {
+    if (this.project && this.project.name) {
       title += " in project " + this.project.name;
     }
     title += ":";
     return (
       <div>
         <h2>{title}</h2>
-        {this.phyloTrees.length === 0
+        {!this.phyloTrees || this.phyloTrees.length === 0
           ? "No trees yet."
           : this.phyloTrees.map((tree, i) => {
               return (
@@ -32,7 +32,10 @@ class PhyloTreeList extends React.Component {
             })}
         <p>
           <b>
-            {this.project.id && this.taxon.taxid ? (
+            {this.project &&
+            this.project.id &&
+            this.taxon &&
+            this.taxon.taxid ? (
               <a
                 href={`/phylo_trees/new?project_id=${this.project.id}&taxid=${
                   this.taxon.taxid
