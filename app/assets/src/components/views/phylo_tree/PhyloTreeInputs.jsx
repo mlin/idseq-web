@@ -1,7 +1,9 @@
 import axios from "axios";
 import React from "react";
-import { Grid, Input, Checkbox, Accordion, Menu } from "semantic-ui-react";
+import { Input, Accordion, Menu } from "semantic-ui-react";
 import PrimaryButton from "../../ui/controls/buttons/PrimaryButton";
+import Checkbox from "../../ui/controls/menus/Checkbox";
+import { Tab, TabPane } from "../../ui/controls/menus/Tab.jsx";
 
 class PhyloTreeInputs extends React.Component {
   // PhyloTreeInputs represents the inputs for the phylo_tree
@@ -223,15 +225,27 @@ class PhyloTreeInputs extends React.Component {
       </div>
     );
 
+    let panes = [
+      {
+        menuItem: "Project",
+        render: () => (
+          <TabPane attached={false}>{sample_display_in_project}</TabPane>
+        )
+      },
+      {
+        menuItem: "IDseq",
+        render: () => (
+          <TabPane attached={false}>{sample_display_outside_project}</TabPane>
+        )
+      }
+    ];
+
     return (
       <div>
         {title}
         {tree_name}
-        <Grid columns={2}>
-          <Grid.Column>{sample_display_in_project}</Grid.Column>
-          <Grid.Column>{sample_display_outside_project}</Grid.Column>
-          {create_button}
-        </Grid>
+        <Tab menu={{ secondary: true, pointing: true }} panes={panes} />
+        {create_button}
       </div>
     );
   }
