@@ -27,6 +27,10 @@ class TaxonTooltip extends React.Component {
       <li className="col s12" key="taxon-name">
         <label>Taxon:</label>
         {taxon.name}
+      </li>,
+      <li className="col s12" key="taxon-category">
+        <label>Category:</label>
+        {taxon.category_name}
       </li>
     ];
     valueMap.forEach(function(pair) {
@@ -58,6 +62,8 @@ class TaxonTooltip extends React.Component {
     return ret;
   }
   render() {
+    console.log("in tooltip:", this.props.sample);
+
     let sample = this.props.sample;
     return (
       <div className="heatmap-tooltips">

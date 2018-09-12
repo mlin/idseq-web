@@ -547,28 +547,3 @@ Heatmap.propTypes = {
   onColumnLabelClick: PropTypes.func.isRequired,
   onRemoveRow: PropTypes.func.isRequired
 };
-
-Heatmap.defaultProps = {
-  colors: [
-    "#FFFFFF",
-    "#F9F1F4",
-    "#F3E4EA",
-    "#EDD6E0",
-    "#E7C9D6",
-    "#E2BBCC",
-    "#DCAEC2",
-    "#D6A1B8",
-    "#D093AE",
-    "#CA86A4",
-    "#C57899",
-    "#BF6B8F",
-    "#B95D85",
-    "#B3507B",
-    "#AD4371",
-    "#A83567",
-    "#A2285D",
-    "#9C1A53",
-    "#960D49",
-    "#91003F"
-  ]
-};

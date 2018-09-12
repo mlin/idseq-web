@@ -352,8 +352,16 @@ class SamplesHeatmap extends React.Component {
     return this.clusteredSamples.flat[columnIndex].name;
   }
 
+  getTaxonCategory(taxonName) {
+    return this.state.taxons.idToCategory[
+      this.state.taxons.nameToId[taxonName]
+    ];
+  }
+
   getRowLabel(rowIndex) {
-    return this.clusteredTaxons.flat[rowIndex];
+    console.log(this.state.taxons);
+    const taxonName = this.clusteredTaxons.flat[rowIndex];
+    return `${taxonName} (${this.getTaxonCategory(taxonName)})`;
   }
 
   getTaxonFor(rowIndex, columnIndex) {
