@@ -219,18 +219,20 @@ class SamplesController < ApplicationController
     @heatmap_data = {
       taxonLevels: %w[Genus Species],
       categories: ReportHelper::ALL_CATEGORIES.pluck('name'),
+      subcategories: {
+        Virus: "Phage"
+      },
       metrics: [
-        "NT.aggregatescore",
-        "NT.rpm",
-        "NT.r",
-        "NT.zscore",
-        "NT.maxzscore",
-        "NR.aggregatescore",
-        "NR.rpm",
-        "NR.r",
-        "NR.zscore",
-        "NR.maxzscore"
-      ],
+          { text: "Aggregate Score", value: "NT.aggregatescore" },
+          { text: "NT rPM", value: "NT.rpm" },
+          { text: "NT r (total reads)", value: "NT.r" },
+          { text: "NT Z Score", value: "NT.zscore" },
+          { text: "NT Max Z Score", value: "NT.maxzscore" },
+          { text: "NR rPM", value: "NR.rpm" },
+          { text: "NR r (total reads)", value: "NR.r" },
+          { text: "NR Z Score", value: "NR.zscore" },
+          { text: "NR Max Z Score", value: "NR.maxzscore" },
+        ],
       backgrounds: current_power.backgrounds.map do |background|
         { name: background.name, value: background.id }
       end,

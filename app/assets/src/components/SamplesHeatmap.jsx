@@ -57,7 +57,7 @@ class SamplesHeatmap extends React.Component {
         }
       },
       selectedOptions: {
-        metric: this.urlParams.metric || this.props.metrics[0],
+        metric: this.urlParams.metric || this.props.metrics[0].value,
         categories: this.urlParams.categories || [],
         background:
           this.urlParams.background || this.props.backgrounds[0].value,
@@ -82,9 +82,10 @@ class SamplesHeatmap extends React.Component {
 
     this.dataGetters = {};
     this.dataAccessorKeys = {};
-    for (var metric of this.state.availableOptions.metrics) {
-      this.dataGetters[metric] = this.makeDataGetter(metric);
-      this.dataAccessorKeys[metric] = metric.split(".");
+    for (let i = 0; i < this.state.availableOptions.metrics.length; i++) {
+      const metric = this.state.availableOptions.metrics[i];
+      this.dataGetters[metric.value] = this.makeDataGetter(metric.value);
+      this.dataAccessorKeys[metric.value] = metric.value.split(".");
     }
 
     this.getColumnLabel = this.getColumnLabel.bind(this);
@@ -140,6 +141,7 @@ class SamplesHeatmap extends React.Component {
   }
 
   getDataProperty(data, property) {
+    // console.log(data, property, this.dataAccessorKeys);
     let keys = this.dataAccessorKeys[property];
     return data[keys[0]][keys[1]];
   }
@@ -473,9 +475,7 @@ class SamplesHeatmap extends React.Component {
   }
 
   renderMetricPicker() {
-    let options = this.state.availableOptions.metrics.map(function(metric) {
-      return { text: metric, value: metric };
-    });
+    let options = this.state.availableOptions.metrics;
 
     return (
       <Dropdown
@@ -612,6 +612,13 @@ class SamplesHeatmap extends React.Component {
   }
 
   renderCategoryFilter() {
+    // let options = [];
+    // for (let i = 0; i < this.state.availableOptions.categories.length; i++) {
+    //   const category = this.state.availableOptions.categories[i];
+    //   options.push({ text: category, value: category });
+    //   // const subcategories = this.state.availableOptions.subcategories[category] || [];
+    //   // for (let j = 0; j < )
+    // }
     let options = this.state.availableOptions.categories.map(function(
       category
     ) {
