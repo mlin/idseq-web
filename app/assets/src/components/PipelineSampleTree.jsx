@@ -18,6 +18,7 @@ class PipelineSampleTree extends React.PureComponent {
   }
 
   makeTree() {
+    console.log(this.props.topTaxons);
     let make_node = function(id, name, level, is_common_name) {
       let data = {};
       for (let dataType of this.dataTypes) {
@@ -115,6 +116,7 @@ class PipelineSampleTree extends React.PureComponent {
       }
       tree.weight += getValue(row);
     }
+
     return root;
   }
 
@@ -201,6 +203,7 @@ class TreeStructure extends React.PureComponent {
     this.i = 0;
     this.duration = 0;
   }
+
   componentWillReceiveProps(nextProps) {
     this.duration = 0;
     this.autoCollapsed = false;
@@ -242,15 +245,14 @@ class TreeStructure extends React.PureComponent {
         to_visit = to_visit.concat(node.children);
       }
     }
-    let circleScale = d3.scale
-      .linear()
-      .domain([min_weight, props.tree.weight])
-      .range([2, 20]);
-
-    let linkScale = d3.scale
-      .linear()
-      .domain([min_weight, props.tree.weight])
-      .range([1, 20]);
+    let scaleByWeight2 = (min, max) =>
+      d3.scale
+        .linear()
+        .domain([min_weight, props.tree.weight])
+        .range([min, max]);
+    let linkScale = scaleByWeight2(1, 20);
+    let circleScale = scaleByWeight2(2, 20);
+    let fontSizeScale = scaleByWeight2(8, 20);
 
     this.autoCollapsed = true;
     let width = 1000,
@@ -287,6 +289,7 @@ class TreeStructure extends React.PureComponent {
       "translate(" + margin.left + "," + margin.top + ")"
     );
 
+    let root = d3.hierarchy(nodes);
     let tree = d3.layout.tree().size([height, width]);
     let nodes = tree.nodes(props.tree);
     let links = tree.links(nodes);
@@ -368,34 +371,51 @@ class TreeStructure extends React.PureComponent {
         d3.select(this.tooltip).classed("hidden", true);
       });
 
-    nodeEnter
-      .append("circle")
-      .attr("r", 1e-6)
-      .on("click", d => {
-        let t = d.children;
-        d.children = d._children;
-        d._children = t;
-        this.update(this.props, d);
+    let circles = nodeEnter.append("g").on("click", d => {
+      let t = d.children;
+      d.children = d._children;
+      d._children = t;
+      this.update(this.props, d);
+    });
+
+    circles.append("circle").attr("r", 1e-6);
+
+    circles
+      .filter(function(d) {
+        return d._children;
+      })
+      .append("path")
+      .attr("class", "cross")
+      .attr("d", function(d) {
+        let r = circleScale(d.weight) - 1;
+        return `M${-r},0 L${r},0 M0,${-r} L0,${r}`;
       });
 
     nodeEnter
       .append("text")
-      .attr("dy", 3)
+      .attr("dy", function(d) {
+        if (d.children) return -6 - circleScale(d.weight);
+      })
       .attr("x", function(d) {
-        return d.children || d._children
-          ? -1 * circleScale(d.weight) - 5
-          : circleScale(d.weight) + 5;
+        if (!d.children) return 6 + circleScale(d.weight);
+      })
+      .style("font-size", function(d) {
+        return fontSizeScale(d.weight);
       })
       .style("text-anchor", function(d) {
-        return d.children || d._children ? "end" : "start";
+        return d.children ? "middle" : "start";
+      })
+      .style("alignment-baseline", function(d) {
+        return d.children ? "baseline" : "middle";
       })
       .text(function(d) {
         return d.name;
       })
+      // .call(this.wrap, 100)
       .on("click", (d, e) => {
         this.props.onNodeTextClicked && this.props.onNodeTextClicked(d);
-      })
-      .style("fill-opacity", 1e-6);
+      });
+    // .style("fill-opacity", 1e-6);
 
     let nodeExit = node
       .exit()
@@ -478,6 +498,30 @@ class TreeStructure extends React.PureComponent {
       </div>
     );
   }
+
+  // wrap(text, width) {
+  //   text.each(function() {
+  //     var text = d3.select(this),
+  //         words = text.text().split(/\s+/).reverse(),
+  //         word,
+  //         line = [],
+  //         lineNumber = 0,
+  //         lineHeight = 1.1, // ems
+  //         y = text.attr("y"),
+  //         dy = parseFloat(text.attr("dy")),
+  //         tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+  //     while (word = words.pop()) {
+  //       line.push(word);
+  //       tspan.text(line.join(" "));
+  //       if (tspan.node().getComputedTextLength() > width) {
+  //         line.pop();
+  //         tspan.text(line.join(" "));
+  //         line = [word];
+  //         tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+  //       }
+  //     }
+  //   });
+  // }
 
   render() {
     return (

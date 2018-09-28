@@ -1748,7 +1748,7 @@ class RenderMarkup extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      view: this.props.view || "table"
+      view: this.props.view || "tree"
     };
     this._nodeTextClicked = this.nodeTextClicked.bind(this);
   }
@@ -1808,6 +1808,7 @@ class RenderMarkup extends React.Component {
     return (
       <PipelineSampleTree
         taxons={parent.state.selected_taxons}
+        topTaxons={parent.state.selected_taxons_top}
         sample={parent.report_details.sample_info}
         nameType={parent.state.name_type}
         onNodeTextClicked={this._nodeTextClicked}

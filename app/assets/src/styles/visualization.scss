@@ -1,6 +1,8 @@
+@import "./themes/colors";
+
 .scatterplot {
   .trendline {
-    stroke: #3867fa;
+    stroke: $primary-light;
     stroke-width: 2;
     fill: none;
   }
@@ -24,7 +26,7 @@
     stroke-width: 1px;
     fill: #fff;
     &:hover {
-      fill: #3867fa;
+      fill: $primary-light;
     }
   }
 }
@@ -231,25 +233,36 @@
     font-size: 8pt;
     &:hover {
       cursor: pointer;
-      fill: #3867fa;
+      fill: $primary-light;
     }
   }
   .link {
     fill: none;
-    stroke: rgb(78, 173, 73);
-    opacity: 0.5;
+    stroke: $light-grey;
   }
-  circle {
-    stroke: #3867fa;
+
+  .link .top {
+    fill: none;
+    stroke: $primary-light;
+  }
+
+  .node circle {
+    stroke: $primary-light;
     stroke-width: 1.5px;
     fill: #fff;
     &:hover {
-      fill: #3867fa;
+      fill: $primary-light;
       cursor: pointer;
     }
   }
-  .collapsed circle {
-    fill: rgb(192, 206, 250);
+
+  .node.collapsed circle {
+    fill: $primary-light;
+  }
+
+  .node.collapsed path {
+    stroke-width: 2px;
+    stroke: red;
   }
 
   .d3-tree-tooltip {
@@ -267,7 +280,6 @@
 
 #PipelineSampleReads_page {
   .d3-tree {
-    border: 1px solid #eee;
     margin: 1em 0;
   }
   .data-type-chooser {
