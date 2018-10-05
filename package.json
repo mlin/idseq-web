@@ -54,7 +54,10 @@
   },
   "dependencies": {
     "axios": "^0.17.1",
+    "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-plugin-transform-replace-object-assign": "^2.0.0",
+    "babel-preset-airbnb": "^2.6.0",
     "clusterfck": "git+https://github.com/chanzuckerberg/clusterfck.git#master",
     "copy-to-clipboard": "^3.0.8",
     "d3": "^3.5.17",
