@@ -6,11 +6,7 @@ const commonConfig = require("./webpack.config.common.js");
 
 module.exports = merge(commonConfig, {
   devtool: "source-map",
-  mode: "production",
-  output: {
-    path: path.resolve(__dirname, "app/assets/dist"),
-    filename: "bundle.prod.min.js"
-  }
+  mode: "production"
   // plugins: [
   //   new UglifyJsPlugin({
   //     uglifyOptions: {
