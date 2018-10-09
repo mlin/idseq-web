@@ -44,9 +44,12 @@ class ButtonDropdown extends React.Component {
   }
 
   render() {
+    if (this.props.secondary) {
+      console.log("ButtonDropdown is secondary!!");
+    }
     return (
       <Dropdown
-        className="idseq-ui button"
+        className="idseq-ui button secondary"
         disabled={this.props.disabled}
         floating
         onMouseDown={this.handleMouseDown}

@@ -1,5 +1,11 @@
 @import "../../../themes/colors";
 
+.idseq-ui.button.dropdown.secondary {
+  i.dropdown.icon {
+    color: $primary-light;
+  }
+}
+
 .idseq-ui.ui.button.dropdown {
   padding: 0;
   border: 0;
@@ -11,6 +17,10 @@
     border: 0;
     background: transparent;
     width: auto;
+
+    i.dropdown.icon {
+      color: $medium-grey;
+    }
   }
 
   &.focus {
@@ -30,12 +40,6 @@
   .idseq-ui.ui.button {
     margin: 0;
     padding: 6px 31px 6px 16px;
-  }
-
-  i.dropdown.icon {
-    &:before {
-      background-color: red;
-    }
   }
 
   .item {
