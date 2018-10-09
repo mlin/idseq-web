@@ -32,6 +32,12 @@
     padding: 6px 31px 6px 16px;
   }
 
+  i.dropdown.icon {
+    &:before {
+      background-color: red;
+    }
+  }
+
   .item {
     background-color: $white;
     font-weight: 400;
