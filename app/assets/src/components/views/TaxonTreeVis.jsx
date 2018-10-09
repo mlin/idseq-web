@@ -154,51 +154,80 @@ class TaxonTreeVis extends React.Component {
     let nodes = [{ id: "_" }];
 
     let seenNodes = new Set();
+    let genusNodes = {};
     taxa.forEach(taxon => {
-      let parentId = nodes[0].id;
-      for (let i = TaxonLevels.length - 1; i >= taxon.tax_level; i--) {
-        let taxId = taxon.lineage[`${TaxonLevels[i]}_taxid`];
-        let nodeId = taxId > 0 ? taxId : `${parentId}_${taxId}`;
-        if (!seenNodes.has(nodeId)) {
-          nodes.push({
-            id: nodeId,
-            taxId: taxId,
-            parentId: parentId,
-            scientificName:
-              taxon.lineage[`${TaxonLevels[i]}_name`] ||
-              `Uncategorized ${this.capitalize(TaxonLevels[i])}`,
-            lineageRank: TaxonLevels[i]
-          });
-          seenNodes.add(nodeId);
-        }
-        parentId = nodeId;
-      }
+      if (taxon.tax_level == 1) {
+        let parentId = nodes[0].id;
+        for (let i = TaxonLevels.length - 1; i >= taxon.tax_level; i--) {
+          let taxId = taxon.lineage[`${TaxonLevels[i]}_taxid`];
+          let nodeId = taxId > 0 ? taxId : `${parentId}_${taxId}`;
+          if (!seenNodes.has(nodeId)) {
+            nodes.push({
+              id: nodeId,
+              taxId: taxId,
+              parentId: parentId,
+              scientificName:
+                taxon.lineage[`${TaxonLevels[i]}_name`] ||
+                `Uncategorized ${this.capitalize(TaxonLevels[i])}`,
+              lineageRank: TaxonLevels[i],
+              uncategorized: !taxon.lineage[`${TaxonLevels[i]}_name`]
+            });
 
-      let nodeId =
-        taxon.tax_id > 0 ? taxon.tax_id : `${parentId}_${taxon.tax_id}`;
-      nodes.push({
-        id: nodeId,
-        taxId: taxon.tax_id,
-        commonName: taxon.common_name,
-        scientificName:
-          taxon.tax_id > 0
-            ? taxon.name
-            : `Uncategorized ${this.capitalize(
-                TaxonLevels[taxon.tax_level - 1]
-              )}`,
-        lineageRank: TaxonLevels[taxon.tax_level - 1],
-        parentId: parentId,
-        values: {
-          aggregatescore: taxon.NT.aggregatescore,
-          nt_r: taxon.NT.r,
-          nt_rpm: parseFloat(taxon.NT.rpm),
-          nt_zscore: taxon.NT.zscore,
-          nr_r: taxon.NR.r,
-          nr_rpm: parseFloat(taxon.NR.rpm),
-          nr_zscore: taxon.NR.zscore
+            if (genusNodes[taxId]) {
+              Object.assign(nodes[nodes.length - 1], genusNodes[taxId]);
+            }
+
+            seenNodes.add(nodeId);
+          }
+          parentId = nodeId;
         }
-      });
-      seenNodes.add(nodeId);
+
+        let nodeId =
+          taxon.tax_id > 0 ? taxon.tax_id : `${parentId}_${taxon.tax_id}`;
+        nodes.push({
+          id: nodeId,
+          taxId: taxon.tax_id,
+          commonName: taxon.common_name,
+          scientificName:
+            taxon.tax_id > 0
+              ? taxon.name
+              : `Uncategorized ${this.capitalize(
+                  TaxonLevels[taxon.tax_level - 1]
+                )}`,
+          lineageRank: TaxonLevels[taxon.tax_level - 1],
+          parentId: parentId,
+          values: {
+            aggregatescore: taxon.NT.aggregatescore,
+            nt_r: taxon.NT.r,
+            nt_rpm: parseFloat(taxon.NT.rpm),
+            nt_zscore: taxon.NT.zscore,
+            nr_r: taxon.NR.r,
+            nr_rpm: parseFloat(taxon.NR.rpm),
+            nr_zscore: taxon.NR.zscore
+          }
+        });
+        seenNodes.add(nodeId);
+      } else if (taxon.tax_level == 2) {
+        genusNodes[taxon.tax_id] = {
+          taxId: taxon.tax_id,
+          commonName: taxon.common_name,
+          scientificName:
+            taxon.name ||
+            `Uncategorized ${this.capitalize(
+              TaxonLevels[taxon.tax_level - 1]
+            )}`,
+          lineageRank: TaxonLevels[taxon.tax_level - 1],
+          values: {
+            aggregatescore: taxon.NT.aggregatescore,
+            nt_r: taxon.NT.r,
+            nt_rpm: parseFloat(taxon.NT.rpm),
+            nt_zscore: taxon.NT.zscore,
+            nr_r: taxon.NR.r,
+            nr_rpm: parseFloat(taxon.NR.rpm),
+            nr_zscore: taxon.NR.zscore
+          }
+        };
+      }
     });
     return nodes;
   }
@@ -232,6 +261,7 @@ class TaxonTreeVis extends React.Component {
     let name =
       (this.isCommonNameActive() && node.data.commonName) ||
       node.data.scientificName;
+    console.log(node);
     if (node.isAggregated) {
       // TODO: fix bug (not able to consistently reproduce) - currently just avoid crash
       name = `${(node.parent.collapsedChildren || []).length} Taxa`;

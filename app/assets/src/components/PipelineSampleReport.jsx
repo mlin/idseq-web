@@ -1791,7 +1791,7 @@ class RenderMarkup extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      view: this.props.view || "table"
+      view: this.props.view || "tree"
     };
     this._nodeTextClicked = this.nodeTextClicked.bind(this);
   }

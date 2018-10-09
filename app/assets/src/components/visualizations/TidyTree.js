@@ -30,7 +30,7 @@ export default class TidyTree {
     );
 
     this.margins = {
-      top: 20,
+      top: 50,
       right: 200,
       left: 40,
       bottom: 20
@@ -441,6 +441,7 @@ export default class TidyTree {
     let textUpdate = textEnter.merge(node.select("text"));
 
     textUpdate
+      .filter(d => !d.data.uncategorized)
       .text(d => {
         return (
           (this.options.useCommonName ? d.data.commonName : null) ||
@@ -488,7 +489,13 @@ export default class TidyTree {
 
     nodeUpdate
       .select("circle")
-      .attr("r", d => nodeScale(d.data.values[this.options.attribute]));
+      .attr(
+        "r",
+        d =>
+          d.data.uncategorized
+            ? 0
+            : nodeScale(d.data.values[this.options.attribute])
+      );
 
     nodeUpdate.select("path.cross").attr("d", d => {
       let r = nodeScale(d.data.values[this.options.attribute]) * 0.9;
