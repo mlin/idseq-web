@@ -69,7 +69,6 @@ class Samples extends React.Component {
     this.deleteProject = this.deleteProject.bind(this);
     this.toggleBackgroundFlag = this.toggleBackgroundFlag.bind(this);
     this.getBackgroundIdByName = this.getBackgroundIdByName.bind(this);
-    this.gotoTreeList = this.gotoTreeList.bind(this);
     this.state = {
       invite_status: null,
       background_creation_response: {},
@@ -269,14 +268,9 @@ class Samples extends React.Component {
     return this.editableProjects.indexOf(parseInt(projectId)) > -1;
   }
 
+  // TODO(mark): Rename function. Report progress display was removed.
+  // But we still need to call checkReportDownload.
   displayReportProgress(res, status_action, retrieve_action) {
-    $(".download-progress")
-      .html(
-        `<i className="fa fa-circle-o-notch fa-spin fa-fw"></i> ${
-          res.data.status_display
-        }`
-      )
-      .css("display", "block");
     setTimeout(() => {
       this.checkReportDownload(status_action, retrieve_action);
     }, 2000);
@@ -561,12 +555,10 @@ class Samples extends React.Component {
     runtime = Number(runtime);
     const h = Math.floor(runtime / 3600);
     const m = Math.floor((runtime % 3600) / 60);
-    const s = Math.floor((runtime % 3600) % 60);
 
     const hDisplay = h > 0 ? h + (h === 1 ? " hour, " : " hours, ") : "";
-    const mDisplay = m > 0 ? m + (m === 1 ? " minute, " : " minutes, ") : "";
-    const sDisplay = s > 0 ? s + (s === 1 ? " second" : " seconds") : "";
-    return hDisplay + mDisplay + sDisplay;
+    const mDisplay = m > 0 ? m + (m === 1 ? " minute" : " minutes") : "";
+    return hDisplay + mDisplay;
   }
 
   renderPipelineOutput(samples) {
@@ -780,14 +772,12 @@ class Samples extends React.Component {
   viewSample(id, e) {
     e.preventDefault();
 
-    window.open(`/samples/${id}`);
+    window.open(`/samples/${id}`, "_self");
   }
 
   renderEmptyTable() {
     return (
-      <div className="center-align">
-        <i className="fa fa-frown-o"> No result found</i>
-      </div>
+      <div className="col s12 center-align empty-message">No results found</div>
     );
   }
 
@@ -857,7 +847,10 @@ class Samples extends React.Component {
 
   compareSamples() {
     if (this.state.selectedSampleIds.length) {
-      window.open(`/samples/heatmap?sampleIds=${this.state.selectedSampleIds}`);
+      window.open(
+        `/samples/heatmap?sampleIds=${this.state.selectedSampleIds}`,
+        "_self"
+      );
     }
   }
 
@@ -880,15 +873,6 @@ class Samples extends React.Component {
           background_creation_response: { message: "Something went wrong." }
         });
       });
-  }
-
-  gotoTreeList() {
-    let tree_index_url = "/phylo_trees/index";
-    let project_id = parseInt(this.state.selectedProjectId);
-    if (project_id) {
-      tree_index_url += `?projectId=${project_id}`;
-    }
-    window.open(tree_index_url, "_blank noopener hide_referrer");
   }
 
   clearAllFilters() {
@@ -1052,12 +1036,8 @@ class Samples extends React.Component {
     );
 
     let delete_project_button = (
-      <div className="compare-area">
-        <div className="white">
-          <a onClick={this.deleteProject} className="compare center">
-            <span>Delete project</span>
-          </a>
-        </div>
+      <div className="button-container">
+        <SecondaryButton text="Delete Project" onClick={this.deleteProject} />
       </div>
     );
 
@@ -1550,29 +1530,22 @@ function ColumnEntries({
 
 function SampleNameInfo({ parent, dbSample, uploader }) {
   return (
-    <span
+    <div
       onClick={e => parent.viewSample(dbSample.id, e)}
       className="sample-name-info"
     >
-      <div className="card-label top-label">
-        <span className="upload-date">
-          Uploaded{" "}
-          {moment(dbSample.created_at)
-            .startOf("second")
-            .fromNow()}
-        </span>
-      </div>
       <div className="card-label center-label sample-name bold-label">
         {dbSample.name}
       </div>
       <div className="card-label author bottom-label">
-        {!uploader || uploader === "" ? (
-          ""
-        ) : (
-          <span>Uploaded by: {uploader}</span>
-        )}
+        <span className="upload-date">
+          {moment(dbSample.created_at)
+            .startOf("second")
+            .fromNow()}
+        </span>
+        {!uploader || uploader === "" ? "" : <span>{` | ${uploader}`}</span>}
       </div>
-    </span>
+    </div>
   );
 }
 
@@ -2015,7 +1988,7 @@ function ProjectInfoHeading({
 
   return (
     <div className="row download-section">
-      <div className="col s5 wrapper">
+      <div className="col s5 wrapper proj-title-container">
         <div
           className={
             !proj ? "proj-title heading all-proj" : "heading proj-title"
@@ -2062,7 +2035,7 @@ function TableColumnHeaders({ sort, colMap, filterStatus, state, parent }) {
       <div className="samples-card white">
         <div className="flex-container">
           <ul className="flex-items">
-            <li>
+            <li className="table-header-name">
               <div className="card-label column-title center-label sample-name">
                 <div className="sort-able" onClick={parent.sortSamples}>
                   <span>Name</span>
@@ -2220,7 +2193,7 @@ function SampleDetailedColumns({
           <div className="card-label center center-label data-label bold-label">
             {data_values[column]}
           </div>
-          <div className="card-label center center-label data-label">
+          <div className="card-label center center-label data-label data-label-percent">
             {data_values["nonhost_reads_percent"]}
           </div>
         </li>

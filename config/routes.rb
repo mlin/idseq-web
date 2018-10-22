@@ -22,13 +22,11 @@ Rails.application.routes.draw do
     get :nonhost_fasta, on: :member
     get :unidentified_fasta, on: :member
     get :results_folder, on: :member
-    get :fastqs_folder, on: :member
     post :bulk_upload, on: :collection
     post :save_metadata, on: :member
     post :add_taxon_confirmation, on: :member
     post :remove_taxon_confirmation, on: :member
     get :samples_taxons, on: :collection
-    get :top_taxons, on: :collection
     get :heatmap, on: :collection
     get :download_heatmap, on: :collection
   end
@@ -42,7 +40,6 @@ Rails.application.routes.draw do
   get 'taxon_descriptions', to: 'home#taxon_descriptions'
   post 'feedback', to: 'home#feedback'
   post 'sign_up', to: 'home#sign_up'
-  get 'terms' => redirect("https://s3-us-west-2.amazonaws.com/idseq-database/Terms.pdf")
 
   resources :projects do
     get :make_project_reports_csv, on: :member
@@ -65,7 +62,7 @@ Rails.application.routes.draw do
   get 'phylo_trees/new', to: 'phylo_trees#new'
   post 'phylo_trees/create', to: 'phylo_trees#create'
   post 'phylo_trees/retry', to: 'phylo_trees#retry'
-  get 'phylo_trees/:id/download_snps', to: 'phylo_trees#download_snps'
+  get 'phylo_trees/:id/download', to: 'phylo_trees#download'
   get 'choose_taxon', to: 'phylo_trees#choose_taxon'
 
   resources :host_genomes

@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import moment from "moment";
 import $ from "jquery";
 import axios from "axios";
-import { Button, Divider, Dropdown } from "semantic-ui-react";
+import { Divider, Dropdown } from "semantic-ui-react";
 import DownloadButton from "./ui/controls/buttons/DownloadButton";
 import numberWithCommas from "../helpers/strings";
 import SubHeader from "./SubHeader";
@@ -12,6 +12,7 @@ import PipelineSampleReport from "./PipelineSampleReport";
 import AMRView from "./AMRView";
 import BasicPopup from "./BasicPopup";
 import { SAMPLE_FIELDS } from "./utils/SampleFields";
+import PrimaryButton from "./ui/controls/buttons/PrimaryButton";
 
 class PipelineSampleReads extends React.Component {
   constructor(props) {
@@ -69,6 +70,7 @@ class PipelineSampleReads extends React.Component {
     };
     this.DROPDOWN_METADATA_FIELDS = Object.keys(this.DROPDOWN_OPTIONS);
     this.render_metadata_textfield = this.render_metadata_textfield.bind(this);
+    this.render_metadata_numfield = this.render_metadata_numfield.bind(this);
     this.render_metadata_dropdown = this.render_metadata_dropdown.bind(this);
 
     this.sampleFieldsColumn1 = [
@@ -97,8 +99,8 @@ class PipelineSampleReads extends React.Component {
       sample_library: this.render_metadata_textfield,
       sample_sequencer: this.render_metadata_textfield,
       sample_unique_id: this.render_metadata_textfield,
-      sample_input_pg: this.render_metadata_textfield,
-      sample_batch: this.render_metadata_textfield,
+      sample_input_pg: this.render_metadata_numfield,
+      sample_batch: this.render_metadata_numfield,
       sample_organism: this.render_metadata_textfield,
       sample_detection: this.render_metadata_textfield
     };
@@ -536,7 +538,7 @@ class PipelineSampleReads extends React.Component {
     let d_report = null;
     let waitingSpinner = (
       <div>
-        Sample Waiting ...
+        Sample {this.pipelineStatus} ...
         <p>
           <i className="fa fa-spinner fa-spin fa-3x" />
         </p>
@@ -759,12 +761,6 @@ class PipelineSampleReads extends React.Component {
     let download_section = (
       <div>
         <ResultButton
-          url={`/samples/${this.sampleInfo.id}/fastqs_folder`}
-          icon="fa-folder-open"
-          label="Source Data"
-          visible={this.can_edit}
-        />
-        <ResultButton
           url={`/samples/${this.sampleInfo.id}/nonhost_fasta`}
           icon="fa-cloud-download"
           label="Non-Host Reads"
@@ -798,8 +794,10 @@ class PipelineSampleReads extends React.Component {
           className="dropdown-button sample-select-dropdown"
           data-activates="sample-list"
         >
-          <span className="sample-name-label">{this.state.sample_name}</span>
-          <i className="fa fa-chevron-down right" />
+          <div className="sample-name-label">{this.state.sample_name}</div>
+          <div className="dropdown-button-arrow">
+            <i className="fa fa-chevron-down" />
+          </div>
 
           <ul
             id="sample-list"
@@ -860,14 +858,8 @@ class PipelineSampleReads extends React.Component {
       </div>
     ) : null;
 
-    let delete_sample_button = (
-      <Button onClick={this.deleteSample} className="delete-button">
-        Delete sample
-      </Button>
-    );
-
-    let report_buttons;
-    if (this.reportPresent)
+    let report_buttons = null;
+    if (this.reportPresent) {
       report_buttons = (
         <div className="col no-padding s2 right-align">
           <div className="report-action-buttons">
@@ -875,6 +867,15 @@ class PipelineSampleReads extends React.Component {
           </div>
         </div>
       );
+    } else if (this.sampleInfo.status === "created" || !this.reportPresent) {
+      report_buttons = (
+        <div className="col no-padding s2 right-align">
+          <div className="report-action-buttons">
+            <PrimaryButton onClick={this.deleteSample} text="Delete Sample" />
+          </div>
+        </div>
+      );
+    }
 
     let show_amr = this.amr != null;
     let amr_tab = show_amr ? (
@@ -899,14 +900,13 @@ class PipelineSampleReads extends React.Component {
             </div>
             <div className="row">
               <div className="sub-title col s10">
-                <a href={`/home?project_id=${this.projectInfo.id}`}>
-                  {this.projectInfo.name + " "}
-                </a>
-                {">"}
-                {sample_dropdown}
-                {this.sampleInfo.status === "created" || !this.reportPresent
-                  ? delete_sample_button
-                  : null}
+                <div className="project-name">
+                  <a href={`/home?project_id=${this.projectInfo.id}`}>
+                    {this.projectInfo.name + " "}
+                  </a>
+                </div>
+                <div className="separator">{">"}</div>
+                <div className="sample-dropdown">{sample_dropdown}</div>
               </div>
               {report_buttons}
             </div>
@@ -973,7 +973,9 @@ class PipelineSampleReads extends React.Component {
                             let properties = this.sampleFieldProperties.get(
                               field
                             );
-                            let renderMethod = this.sampleFieldRenderMethods[field];
+                            let renderMethod = this.sampleFieldRenderMethods[
+                              field
+                            ];
                             return renderMethod(
                               properties.label,
                               properties.name,
@@ -986,7 +988,9 @@ class PipelineSampleReads extends React.Component {
                             let properties = this.sampleFieldProperties.get(
                               field
                             );
-                            let renderMethod = this.sampleFieldRenderMethods[field];
+                            let renderMethod = this.sampleFieldRenderMethods[
+                              field
+                            ];
                             return renderMethod(
                               properties.label,
                               properties.name,

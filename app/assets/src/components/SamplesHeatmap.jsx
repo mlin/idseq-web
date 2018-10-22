@@ -12,13 +12,14 @@ import Dropdown from "./ui/controls/dropdowns/Dropdown";
 import ErrorBoundary from "./ErrorBoundary";
 import Heatmap from "./visualizations/Heatmap";
 import HeatmapLegend from "./visualizations/HeatmapLegend";
-import MultipleTreeDropdown from "./ui/controls/dropdowns/MultipleNestedDropdown";
+import MultipleNestedDropdown from "./ui/controls/dropdowns/MultipleNestedDropdown";
 import PrimaryButton from "./ui/controls/buttons/PrimaryButton";
 import PropTypes from "prop-types";
 import Slider from "./ui/controls/Slider";
 import TaxonTooltip from "./TaxonTooltip";
 import ThresholdFilterDropdown from "./ui/controls/dropdowns/ThresholdFilterDropdown";
 import { Colormap } from "./utils/colormaps/Colormap";
+import DeepEqual from "fast-deep-equal";
 
 class SamplesHeatmap extends React.Component {
   // TODO: do not make another request if values did not change
@@ -60,7 +61,7 @@ class SamplesHeatmap extends React.Component {
         }
       },
       selectedOptions: {
-        metric: this.urlParams.metric || this.props.metrics[0],
+        metric: this.urlParams.metric || (this.props.metrics[0] || {}).value,
         categories: this.urlParams.categories || [],
         subcategories: this.urlParams.subcategories || {},
         background:
@@ -88,9 +89,9 @@ class SamplesHeatmap extends React.Component {
 
     this.dataGetters = {};
     this.dataAccessorKeys = {};
-    for (var metric of this.state.availableOptions.metrics) {
-      this.dataGetters[metric] = this.makeDataGetter(metric);
-      this.dataAccessorKeys[metric] = metric.split(".");
+    for (let metric of this.state.availableOptions.metrics) {
+      this.dataGetters[metric.value] = this.makeDataGetter(metric.value);
+      this.dataAccessorKeys[metric.value] = metric.value.split(".");
     }
 
     this.getColumnLabel = this.getColumnLabel.bind(this);
@@ -131,21 +132,33 @@ class SamplesHeatmap extends React.Component {
     if (typeof urlParams.categories === "string") {
       urlParams.categories = urlParams.categories.split(",");
     }
-    // TODO: add threshold filters
-    // TODO: add subcategories filter
-    // TODO: add read specificity filter
+    if (typeof urlParams.subcategories === "string") {
+      urlParams.subcategories = JSON.parse(urlParams.subcategories);
+    }
+    if (typeof urlParams.thresholdFilters === "string") {
+      urlParams.thresholdFilters = JSON.parse(urlParams.thresholdFilters);
+    }
     return urlParams;
   }
 
-  downloadCurrentViewDataURL() {
+  prepareParams() {
     let params = this.getUrlParams();
+
+    // Parameters stored as objects
+    params.thresholdFilters = JSON.stringify(params.thresholdFilters);
+    params.subcategories = JSON.stringify(params.subcategories);
+
+    return queryString.stringify(params, { arrayFormat: "bracket" });
+  }
+
+  downloadCurrentViewDataURL() {
     let url = new URL("/samples/download_heatmap", window.origin);
-    let downloadableUrl = [
-      url.toString(),
-      "?",
-      queryString.stringify(params, { arrayFormat: "bracket" })
-    ].join("");
-    return downloadableUrl;
+    return `${url.toString()}?${this.prepareParams()}`;
+  }
+
+  onShareClick() {
+    let url = new URL(location.pathname, window.origin);
+    copy(`${url.toString()}?${this.prepareParams()}`);
   }
 
   getDataProperty(data, property) {
@@ -178,7 +191,6 @@ class SamplesHeatmap extends React.Component {
       this.lastRequestToken.cancel("Parameters changed");
 
     this.lastRequestToken = axios.CancelToken.source();
-
     axios
       .get("/samples/samples_taxons.json", {
         params: {
@@ -492,14 +504,10 @@ class SamplesHeatmap extends React.Component {
   }
 
   renderMetricPicker() {
-    let options = this.state.availableOptions.metrics.map(function(metric) {
-      return { text: metric, value: metric };
-    });
-
     return (
       <Dropdown
         fluid
-        options={options}
+        options={this.state.availableOptions.metrics}
         onChange={this.onMetricChange}
         value={this.state.selectedOptions.metric}
         label="Metric:"
@@ -509,6 +517,10 @@ class SamplesHeatmap extends React.Component {
   }
 
   onThresholdFilterApply(filters) {
+    if (DeepEqual(filters, this.state.selectedOptions.thresholdFilters)) {
+      return;
+    }
+
     this.optionsChanged = true;
     this.setSelectedOptionsState(
       { thresholdFilters: filters },
@@ -611,17 +623,6 @@ class SamplesHeatmap extends React.Component {
     );
   }
 
-  onShareClick() {
-    let params = this.getUrlParams();
-    let url = new URL(location.pathname, window.origin);
-    let shareableUrl = [
-      url.toString(),
-      "?",
-      queryString.stringify(params, { arrayFormat: "bracket" })
-    ].join("");
-    copy(shareableUrl);
-  }
-
   onCategoryChange(categories, subcategories) {
     this.optionsChanged = true;
     this.setSelectedOptionsState(
@@ -643,11 +644,12 @@ class SamplesHeatmap extends React.Component {
     });
 
     return (
-      <MultipleTreeDropdown
+      <MultipleNestedDropdown
         fluid
         options={options}
         onChange={this.onCategoryChange}
         selectedOptions={this.state.selectedOptions.categories}
+        selectedSuboptions={this.state.selectedOptions.subcategories}
         label="Taxon Categories:"
         disabled={!this.state.data}
       />
@@ -707,6 +709,10 @@ class SamplesHeatmap extends React.Component {
   }
 
   onSpecificityChange(_, specificity) {
+    if (specificity.value === this.state.selectedOptions.readSpecificity) {
+      return;
+    }
+
     this.optionsChanged = true;
     this.setSelectedOptionsState(
       { readSpecificity: specificity.value },

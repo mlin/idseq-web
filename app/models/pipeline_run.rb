@@ -335,6 +335,12 @@ class PipelineRun < ApplicationRecord
     pipeline_output_dict = json_dict['pipeline_output']
     pipeline_output_dict.slice!('taxon_counts_attributes')
 
+    # check if there's any record loaded into taxon_counts. If so, skip
+    check_count_type = refined ? 'NT+' : 'NT'
+    loaded_records = TaxonCount.where(pipeline_run_id: id)
+                               .where(count_type: check_count_type).count
+    return if loaded_records > 0
+
     # TODO: remove the following. deprecated.
     # version_s3_path = "#{alignment_output_s3_path}/#{VERSION_JSON_NAME}"
     # update(version: `aws s3 cp #{version_s3_path} -`)
@@ -578,6 +584,12 @@ class PipelineRun < ApplicationRecord
     save
   end
 
+  def job_status_display
+    return "Pipeline Initializizng" unless self.job_status
+    stage = self.job_status.to_s.split("-")[0].split(".")[1]
+    stage ? "Running #{stage}" : self.job_status
+  end
+
   def check_and_log_long_run
     # Check for long-running pipeline runs and log/alert if needed:
     if alert_sent.zero?
@@ -717,7 +729,7 @@ class PipelineRun < ApplicationRecord
     uncategorizable_id = TaxonLineage::MISSING_LINEAGE_ID.fetch(tax_level_name.to_sym, -9999)
     uncategorizable_name = "Uncategorizable as a #{tax_level_name}"
     TaxonCount.connection.execute(
-      "INSERT INTO taxon_counts(pipeline_run_id, tax_id, name,
+      "REPLACE INTO taxon_counts(pipeline_run_id, tax_id, name,
                                 tax_level, count_type, count,
                                 percent_identity, alignment_length, e_value,
                                 species_total_concordant, genus_total_concordant, family_total_concordant,

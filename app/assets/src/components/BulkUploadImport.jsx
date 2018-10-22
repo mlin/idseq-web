@@ -653,17 +653,26 @@ class BulkUploadImport extends React.Component {
         />
         <label htmlFor="consentChecked" className="checkbox">
           <span>
-            I agree that the data I am uploading to IDseq has been lawfully
-            collected and that I have all necessary consent and authorization to
-            upload it for the purposes outlined in {"IDseq's "}
+            {
+              "I agree that the data I am uploading to IDseq has been lawfully collected and that I have all the necessary consents, permissions, and authorizations needed to collect, share, and export data to IDseq as outlined in the "
+            }
           </span>
           <a
-            href="https://s3-us-west-2.amazonaws.com/idseq-database/Terms.pdf"
+            href="https://assets.idseq.net/Terms.pdf"
             target="_blank"
             rel="noopener noreferrer"
             className="terms-link"
           >
-            Terms of Use.
+            Terms
+          </a>
+          {" and "}
+          <a
+            href="https://assets.idseq.net/Privacy.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="terms-link"
+          >
+            Data Privacy Notice.
           </a>
         </label>
       </div>
@@ -930,7 +939,7 @@ class BulkUploadImport extends React.Component {
                       <div className="field-title">
                         <div className="read-count-label">
                           Path to Samples Folder<br />
-                          <i>
+                          <i className="validation-info">
                             Files in folder must have one of the following
                             extensions to be considered:<br />
                             fastq.gz / fq.gz / fastq / fq / fasta.gz / fa.gz /
@@ -962,6 +971,18 @@ class BulkUploadImport extends React.Component {
                         </div>
                       ) : null}
                     </div>
+                  </div>
+                </div>
+                <div className="upload-notes">
+                  <div>
+                    - Please ensure that IDseq has permissions to read/list your
+                    S3 bucket or ask our team for help.
+                  </div>
+                  <div>
+                    - Also convert links like
+                    "https://s3-us-west-2.amazonaws.com/czbiohub-seqbot/fastqs/171018_NB501961_0022_AHL2TVBGX3/rawdata"
+                    to the format
+                    "s3://czbiohub-seqbot/fastqs/171018_NB501961_0022_AHL2TVBGX3/rawdata"
                   </div>
                 </div>
                 {termsBlurb}

@@ -1,38 +1,41 @@
-@import "variables";
+@import "typography";
+@import "themes/colors";
 
-.header {
-  margin: 25px 75px;
-  .title {
-    font-size: $font-size-h3;
-    color: #03a9f4;
-    .path {
-      margin: 20px;
-      color: #000;
-      font-weight: $font-weight-thin;
+.results-folder {
+  .header {
+    margin: 25px 75px;
+    .title {
+      font-size: $font-size-h3;
+      color: $primary-light;
+      .path {
+        margin: 20px;
+        color: $black;
+        font-weight: $font-weight-thin;
+      }
+      .back {
+        cursor: pointer;
+        &:hover {
+          text-decoration: underline;
+        }
+      }
     }
-    .back {
+    th {
+      color: $darkest-grey;
+    }
+    tr {
       cursor: pointer;
-      &:hover {
-        text-decoration: underline;
+      td {
+        color: $darkest-grey;
+        &:hover {
+          color: $primary-light;
+        }
       }
     }
-  }
-  th {
-    color: $headings-color;
-  }
-  tr {
-    cursor: pointer;
-    td {
-      color: $body-color;
-      &:hover {
-        color: #3867fa;
-      }
+    i.fa-file {
+      margin-right: 15px;
     }
-  }
-  i.fa-file {
-    margin-right: 15px;
-  }
-  .size-tag {
-    color: #d3d3d3;
+    .size-tag {
+      color: $light-grey;
+    }
   }
 }

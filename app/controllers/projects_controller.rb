@@ -1,4 +1,6 @@
 class ProjectsController < ApplicationController
+  include ApplicationHelper
+  include AwsHelper
   include SamplesHelper
   include ReportHelper
   ########################################
@@ -17,6 +19,7 @@ class ProjectsController < ApplicationController
 
   power :projects, map: { EDIT_ACTIONS => :updatable_projects }, as: :projects_scope
 
+  before_action :admin_required, only: [:edit, :new]
   before_action :set_project, only: READ_ACTIONS + EDIT_ACTIONS
   before_action :assert_access, only: OTHER_ACTIONS
   before_action :check_access
@@ -98,7 +101,7 @@ class ProjectsController < ApplicationController
 
   def make_project_reports_csv
     user_id = current_user.id
-    `aws s3 rm #{@project.report_tar_s3(user_id)}`
+    safe_s3_rm(@project.report_tar_s3(user_id))
     params["user_id"] = user_id
     Resque.enqueue(GenerateProjectReportsCsv, params)
     render json: { status_display: project_reports_progress_message }
@@ -116,13 +119,13 @@ class ProjectsController < ApplicationController
   def send_project_reports_csv
     user_id = current_user.id
     output_file = @project.report_tar(user_id)
-    `aws s3 cp #{@project.report_tar_s3(user_id)} #{output_file}`
+    safe_s3_cp(@project.report_tar_s3(user_id), output_file)
     send_file output_file
   end
 
   def make_host_gene_counts
     user_id = current_user.id
-    `aws s3 rm #{@project.host_gene_counts_tar_s3(user_id)}`
+    safe_s3_rm(@project.host_gene_counts_tar_s3(user_id))
     params["user_id"] = user_id
     Resque.enqueue(HostGeneCounts, params)
     render json: { status_display: project_reports_progress_message }
@@ -140,7 +143,7 @@ class ProjectsController < ApplicationController
   def send_host_gene_counts
     user_id = current_user.id
     output_file = @project.host_gene_counts_tar(user_id)
-    `aws s3 cp #{@project.host_gene_counts_tar_s3(user_id)} #{output_file}`
+    safe_s3_cp(@project.host_gene_counts_tar_s3(user_id), output_file)
     send_file output_file
   end
 
@@ -253,7 +256,9 @@ class ProjectsController < ApplicationController
 
   # Never trust parameters from the scary internet, only allow the white list through.
   def project_params
-    params.require(:project).permit(:name, :public_access, :background_flag, user_ids: [])
+    result = params.require(:project).permit(:name, :public_access, :background_flag, user_ids: [])
+    result[:name] = sanitize(result[:name]) if result[:name]
+    result
   end
 
   def update_project_background

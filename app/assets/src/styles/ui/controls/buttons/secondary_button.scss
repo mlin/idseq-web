@@ -12,24 +12,28 @@
     }
   }
 
-  &:hover {
+  &:hover,
+  &.hover {
     background: $primary-light;
     color: $white;
   }
 
-  &:active {
+  &:active,
+  &.active {
     border: 1px solid $primary-medium;
     background-color: $primary-medium;
     color: $white;
   }
 
-  &:focus {
+  &:focus,
+  &.focus {
     border: 1px solid $primary-medium;
     background-color: $primary-medium;
     color: $white;
   }
 
-  &:disabled {
+  &:disabled,
+  &.disabled {
     border: 1px solid $medium-grey;
     background-color: $white;
     color: $medium-grey;

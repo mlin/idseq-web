@@ -7,13 +7,14 @@ import DataTable from "../../visualizations/table/DataTable";
 import Moment from "react-moment";
 import PhyloTreeChecks from "./PhyloTreeChecks";
 import SearchBox from "../../ui/controls/SearchBox";
-import LoadingSpinner from "../../ui/icons/LoadingSpinner";
+import LoadingIcon from "../../ui/icons/LoadingIcon";
 
 class PhyloTreeCreation extends React.Component {
   constructor(props) {
     super(props);
 
     this.minNumberOfSamples = 4;
+    this.maxNumberOfSamples = 100;
 
     this.state = {
       defaultPage: 0,
@@ -59,7 +60,7 @@ class PhyloTreeCreation extends React.Component {
       tissue: "Tissue",
       location: "Location",
       date: "Date",
-      reads: "Read Count"
+      reads: "Read Count\n(NT | NR)"
     };
 
     this.otherSamplesHeaders = {
@@ -83,7 +84,6 @@ class PhyloTreeCreation extends React.Component {
     this.canContinueWithTaxonAndProject = this.canContinueWithTaxonAndProject.bind(
       this
     );
-
     this.handleBranchChange = this.handleBranchChange.bind(this);
     this.handleChangedProjectSamples = this.handleChangedProjectSamples.bind(
       this
@@ -248,7 +248,7 @@ class PhyloTreeCreation extends React.Component {
   parsePhyloTreeData(phyloTreeData) {
     return phyloTreeData.map(row => ({
       name: row.name,
-      user: row.user.name,
+      user: (row.user || {}).name,
       last_update: <Moment fromNow date={row.updated_at} />,
       view: <a href={`/phylo_trees/index?treeId=${row.id}`}>View</a>
     }));
@@ -369,10 +369,11 @@ class PhyloTreeCreation extends React.Component {
   }
 
   isNumberOfSamplesValid() {
-    return (
+    let nSamples =
       this.state.selectedProjectSamples.size +
-        this.state.selectedOtherSamples.size >=
-      this.minNumberOfSamples
+      this.state.selectedOtherSamples.size;
+    return (
+      nSamples >= this.minNumberOfSamples && nSamples <= this.maxNumberOfSamples
     );
   }
 
@@ -400,8 +401,8 @@ class PhyloTreeCreation extends React.Component {
     if (this.state.showErrorSamples && !this.isNumberOfSamplesValid()) {
       return (
         <span className="wizard__error">
-          {totalSelectedSamples} Total Samples (min number is{" "}
-          {this.minNumberOfSamples})
+          {totalSelectedSamples} Total Samples (must be between{" "}
+          {this.minNumberOfSamples} and {this.maxNumberOfSamples})
         </span>
       );
     }
@@ -466,9 +467,10 @@ class PhyloTreeCreation extends React.Component {
                   source={this.state.projectList}
                   onResultSelect={this.handleSelectProject}
                   initialValue={this.state.projectName}
+                  placeholder="Existing project name"
                 />
               ) : (
-                <LoadingSpinner />
+                <LoadingIcon />
               )}
             </div>
           </div>
@@ -480,9 +482,10 @@ class PhyloTreeCreation extends React.Component {
                   source={this.state.taxonList}
                   onResultSelect={this.handleSelectTaxon}
                   initialValue={this.state.taxonName}
+                  placeholder="Genus name"
                 />
               ) : (
-                <LoadingSpinner />
+                <LoadingIcon />
               )}
             </div>
           </div>
@@ -540,7 +543,7 @@ class PhyloTreeCreation extends React.Component {
             this.state.projectSamples.length == 0 ? (
               <div>No samples containing {this.state.taxonName} available</div>
             ) : (
-              <LoadingSpinner />
+              <LoadingIcon />
             )}
           </div>
         </Wizard.Page>
@@ -548,7 +551,7 @@ class PhyloTreeCreation extends React.Component {
       addIdseqSamples: (
         <Wizard.Page
           key="wizard__page_4"
-          title={`Would you like additional samples from IDSeq that contain ${
+          title={`Would you like additional samples from IDseq that contain ${
             this.state.taxonName
           }?`}
         >
@@ -561,7 +564,7 @@ class PhyloTreeCreation extends React.Component {
               {this.state.selectedProjectSamples.size} Project Samples
             </div>
             <div className="wizard__page-4__searchbar__container">
-              {this.state.selectedOtherSamples.size} IDSeq Samples
+              {this.state.selectedOtherSamples.size} IDseq Samples
             </div>
             <div className="wizard__page-4__searchbar__container">
               {this.getTotalPageRendering()}
@@ -581,7 +584,7 @@ class PhyloTreeCreation extends React.Component {
             this.state.otherSamples.length == 0 ? (
               <div>No samples containing {this.state.taxonName} available</div>
             ) : (
-              <LoadingSpinner />
+              <LoadingIcon />
             )}
           </div>
         </Wizard.Page>
@@ -620,7 +623,7 @@ class PhyloTreeCreation extends React.Component {
         </Wizard>
       );
     } else {
-      return <LoadingSpinner />;
+      return <LoadingIcon />;
     }
   }
 }

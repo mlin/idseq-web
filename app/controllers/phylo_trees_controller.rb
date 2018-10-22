@@ -1,4 +1,7 @@
 class PhyloTreesController < ApplicationController
+  include ApplicationHelper
+  include PipelineRunsHelper
+
   before_action :authenticate_user!
   before_action :no_demo_user, only: :create
 
@@ -17,7 +20,7 @@ class PhyloTreesController < ApplicationController
   # have read access to all those samples.
   ########################################
 
-  READ_ACTIONS = [:show, :download_snps].freeze
+  READ_ACTIONS = [:show, :download].freeze
   EDIT_ACTIONS = [:retry].freeze
   OTHER_ACTIONS = [:new, :create, :index, :choose_taxon].freeze
 
@@ -49,12 +52,12 @@ class PhyloTreesController < ApplicationController
                  name: taxon_lineage.name }
     end
 
-    @phylo_trees = @phylo_trees.as_json(include: { user: { only: [:id, :name] } })
-
-    # Augment tree data with sample attributes and number of pipeline_runs
+    # Augment tree data with sample attributes, number of pipeline_runs and user name
+    @phylo_trees = @phylo_trees.as_json
     @phylo_trees.each do |pt|
       sample_details = PhyloTree.sample_details_by_tree_id[pt["id"]]
       pt["sampleDetailsByNodeName"] = sample_details
+      pt["user"] = PhyloTree.users_by_tree_id[pt["id"]]
     end
 
     respond_to do |format|
@@ -70,12 +73,7 @@ class PhyloTreesController < ApplicationController
   end
 
   def choose_taxon
-    taxon_list = if defined?(TAXON_SEARCH_LIST) && !TAXON_SEARCH_LIST.empty?
-                   TAXON_SEARCH_LIST
-                 else
-                   TaxonLineage.taxon_search_list
-                 end
-    render json: taxon_list
+    render json: File.read("/app/app/lib/taxon_search_list.json")
   end
 
   def new
@@ -110,15 +108,6 @@ class PhyloTreesController < ApplicationController
     end
   end
 
-  def show
-    # DEPRECATED
-    @project = current_power.projects.find(@phylo_tree.project_id)
-    @samples = sample_details_json(@phylo_tree.pipeline_run_ids, @phylo_tree.taxid)
-    @phylo_tree_augmented = @phylo_tree.as_json(include: :pipeline_runs)
-    # The preceding line is extremely slow. If use of the show actionn is restored, it should be rewritten.
-    @can_edit = current_power.updatable_phylo_tree?(@phylo_tree)
-  end
-
   def retry
     if @phylo_tree.status == PhyloTree::STATUS_FAILED
       @phylo_tree.update(status: PhyloTree::STATUS_INITIALIZED,
@@ -130,23 +119,24 @@ class PhyloTreesController < ApplicationController
     end
   end
 
-  def download_snps
-    snp_file = Tempfile.new
-    s3_file = @phylo_tree.s3_outputs["SNP_annotations"]
-    cmd_status = Open3.capture3("aws", "s3", "cp", s3_file, snp_file.path)[2]
-    unless cmd_status.success?
-      snp_file.write("Not yet available.")
-      snp_file.close
+  def download
+    output = params[:output]
+    local_file = Tempfile.new
+    s3_file = @phylo_tree[output]
+    if s3_file && download_to_filename?(s3_file, local_file.path)
+      send_file local_file.path, filename: "#{@phylo_tree.name.downcase.gsub(/\W/, '-')}__#{File.basename(s3_file)}"
+    else
+      local_file.close
       LogUtil.log_err_and_airbrake("downloading #{s3_file} failed")
+      head :not_found
     end
-    send_file snp_file.path, filename: "#{@phylo_tree.name.downcase.gsub(/\W/, '-')}__SNP-annotations.txt"
   end
 
   def create
     @project = current_power.updatable_projects.find(params[:projectId])
     pipeline_run_ids = params[:pipelineRunIds].map(&:to_i)
 
-    name = params[:name]
+    name = sanitize(params[:name])
     taxid = params[:taxId].to_i
     tax_name = params[:taxName]
     dag_branch = if current_user.admin?

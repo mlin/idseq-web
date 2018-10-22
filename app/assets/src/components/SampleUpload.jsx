@@ -575,17 +575,26 @@ class SampleUpload extends React.Component {
         />
         <label htmlFor="consentChecked" className="checkbox">
           <span>
-            I agree that the data I am uploading to IDseq has been lawfully
-            collected and that I have all necessary consent and authorization to
-            upload it for the purposes outlined in {"IDseq's "}
+            {
+              "I agree that the data I am uploading to IDseq has been lawfully collected and that I have all the necessary consents, permissions, and authorizations needed to collect, share, and export data to IDseq as outlined in the "
+            }
           </span>
           <a
-            href="https://s3-us-west-2.amazonaws.com/idseq-database/Terms.pdf"
+            href="https://assets.idseq.net/Terms.pdf"
             target="_blank"
             rel="noopener noreferrer"
             className="terms-link"
           >
-            Terms of Use.
+            Terms
+          </a>
+          {" and "}
+          <a
+            href="https://assets.idseq.net/Privacy.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="terms-link"
+          >
+            Data Privacy Notice.
           </a>
         </label>
       </div>
@@ -795,27 +804,12 @@ class SampleUpload extends React.Component {
                                 this.handleHostChange(g.id, g.name)
                               }
                             >
-                              {this.state.selectedHostGenome === g.name ? (
-                                <div
-                                  className="img-container"
-                                  dangerouslySetInnerHTML={{
-                                    __html: SampleUpload.resolveGenomeIcon(
-                                      g.name,
-                                      "#f2f6ee"
-                                    )
-                                  }}
-                                />
-                              ) : (
-                                <div
-                                  className="img-container"
-                                  dangerouslySetInnerHTML={{
-                                    __html: SampleUpload.resolveGenomeIcon(
-                                      g.name,
-                                      "#95A1Ab"
-                                    )
-                                  }}
-                                />
-                              )}
+                              <div
+                                className="img-container"
+                                dangerouslySetInnerHTML={{
+                                  __html: SampleUpload.resolveGenomeIcon(g.name)
+                                }}
+                              />
                               <div className="genome-label">{g.name}</div>
                             </li>
                           ) : null;
@@ -907,6 +901,18 @@ class SampleUpload extends React.Component {
                         </div>
                       ) : null}
                     </div>
+                  </div>
+                </div>
+                <div className="upload-notes">
+                  <div>
+                    - Please ensure that IDseq has permissions to read/list your
+                    S3 bucket or ask our team for help.
+                  </div>
+                  <div>
+                    - Also convert links like
+                    "https://s3-us-west-2.amazonaws.com/czbiohub-infectious-disease/RR004/RR004_water_2_S23/RR004_water_2_S23_R1_001.fastq.gz"
+                    to the format
+                    "s3://czbiohub-infectious-disease/RR004/RR004_water_2_S23/RR004_water_2_S23_R1_001.fastq.gz"
                   </div>
                 </div>
                 <div className="field">

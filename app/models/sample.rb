@@ -384,6 +384,12 @@ class Sample < ApplicationRecord
     end
   end
 
+  def destroy
+    TaxonByterange.where(pipeline_run_id: pipeline_run_ids).delete_all
+    TaxonCount.where(pipeline_run_id: pipeline_run_ids).delete_all
+    super
+  end
+
   def self.viewable(user)
     if user.admin?
       all
@@ -475,6 +481,10 @@ class Sample < ApplicationRecord
     end
   end
 
+  def self.pipeline_commit(branch)
+    `git ls-remote https://github.com/chanzuckerberg/idseq-dag.git | grep refs/heads/#{branch}`.split[0]
+  end
+
   def kickoff_pipeline
     # only kickoff pipeline when no active pipeline_run running
     return unless pipeline_runs.in_progress.empty?
@@ -486,7 +496,7 @@ class Sample < ApplicationRecord
     # but was made an integer type in case we want to allow users to enter the desired number
     # of reads to susbample to in the future
     pr.pipeline_branch = pipeline_branch.blank? ? "master" : pipeline_branch
-    pr.pipeline_commit = `git ls-remote https://github.com/chanzuckerberg/idseq-dag.git | grep refs/heads/#{pr.pipeline_branch}`.split[0]
+    pr.pipeline_commit = Sample.pipeline_commit(pr.pipeline_branch)
 
     pr.alignment_config = AlignmentConfig.find_by(name: alignment_config_name) if alignment_config_name
     pr.alignment_config ||= AlignmentConfig.find_by(name: AlignmentConfig::DEFAULT_NAME)

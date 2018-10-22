@@ -11,6 +11,7 @@ export default class Dendogram {
     this.container = container;
     this.tree = null;
     this.root = null;
+    this.legend = null;
 
     this.options = Object.assign(
       {
@@ -21,11 +22,12 @@ export default class Dendogram {
         colorGroupLegendTitle: null,
         colorGroupAbsentName: null,
         legendX: 880,
-        legendY: 50,
+        legendY: 0,
         onNodeTextClick: null,
         onNodeClick: null,
         onNodeHover: null,
-        tooltipContainer: null
+        tooltipContainer: null,
+        scaleLabel: null
       },
       options || {}
     );
@@ -38,8 +40,8 @@ export default class Dendogram {
 
     // margin top
     this.margins = {
-      // includes legend
-      top: 80,
+      // includes scale legend
+      top: 160,
       // includes second half of nodes
       bottom: 20,
       // includes root label on the left of the node
@@ -50,7 +52,7 @@ export default class Dendogram {
 
     this.nodeSize = {
       width: 1,
-      height: 16
+      height: 25
     };
 
     this._highlighted = new Set();
@@ -241,41 +243,54 @@ export default class Dendogram {
     }
 
     let allVals = this.allColorAttributeValues;
-    let legend = this.g.select(".legend");
-    if (legend.empty()) {
-      legend = this.g.append("g").attr("class", "legend");
+    this.legend = this.g.select(".legend");
+    if (this.legend.empty()) {
+      this.legend = this.g.append("g").attr("class", "legend");
       let x = this.options.legendX;
       let y = this.options.legendY;
 
       // Set legend title
       let legendTitle = (this.options.colorGroupLegendTitle || "Legend") + ":";
-      legend
+      this.legend
         .append("text")
+        .attr("class", "legend-title")
         .attr("x", x)
         .attr("y", y)
-        .attr("class", "title")
         .text(legendTitle);
 
       x += 5;
       y += 25;
+
       for (let i = 1; i < allVals.length; i++, y += 30) {
         // First of values and colors is the placeholder for 'Uncolored'
 
         // Add color circle
         let color = this.colors[i];
-        legend
+        this.legend
           .append("circle")
           .attr("r", 5)
           .attr("transform", `translate(${x}, ${y})`)
           .style("fill", color);
 
         // Add text label
-        legend
+        this.legend
           .append("text")
           .attr("x", x + 15)
           .attr("y", y + 5)
           .text(allVals[i]);
       }
+
+      // background rectangle
+      let bbox = this.legend.node().getBBox();
+      let bgMargin = 10;
+      this.legend
+        .append("rect")
+        .attr("class", "legend-background")
+        .attr("x", bbox.x - bgMargin)
+        .attr("y", bbox.y - bgMargin)
+        .attr("width", bbox.width + 2 * bgMargin)
+        .attr("height", bbox.height + 2 * bgMargin)
+        .lower();
     }
   }
 
@@ -417,6 +432,14 @@ export default class Dendogram {
       .transition(500)
       .style("opacity", 0)
       .remove();
+
+    // Set scale label
+    scale
+      .append("text")
+      .attr("class", "scale-label")
+      .attr("x", x + 78)
+      .attr("y", y - 30)
+      .text(this.options.scaleLabel);
   }
 
   update() {
@@ -479,7 +502,7 @@ export default class Dendogram {
     this.updateLegend();
     this.adjustXPositions();
     this.adjustYPositions(maxDistance);
-    this.createScale(-30, 0, this.minTreeSize.width, maxDistance);
+    this.createScale(-80, 0, this.minTreeSize.width, maxDistance);
 
     let link = this.g
       .selectAll(".link")
@@ -616,5 +639,8 @@ export default class Dendogram {
       // override D3 styling.
       this.g.selectAll(".node").style("fill", this.options.defaultColor);
     }
+
+    // legend on top
+    this.legend && this.legend.raise();
   }
 }

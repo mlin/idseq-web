@@ -1,6 +1,7 @@
 class PhyloTree < ApplicationRecord
   include PipelineOutputsHelper
   include PipelineRunsHelper
+  include ActionView::Helpers::DateHelper
   has_and_belongs_to_many :pipeline_runs
   belongs_to :user
   belongs_to :project
@@ -17,14 +18,40 @@ class PhyloTree < ApplicationRecord
 
   def s3_outputs
     {
-      "newick" => "#{versioned_output_s3_path}/phylo_tree.newick",
-      "ncbi_metadata" => "#{versioned_output_s3_path}/ncbi_metadata.json",
-      "SNP_annotations" => "#{versioned_output_s3_path}/ksnp3_outputs/SNPs_all_annotated"
+      "newick" => {
+        "s3_path" => "#{versioned_output_s3_path}/phylo_tree.newick",
+        "required" => true,
+        "remote" => false
+      },
+      "ncbi_metadata" => {
+        "s3_path" => "#{versioned_output_s3_path}/ncbi_metadata.json",
+        "required" => true,
+        "remote" => false
+      },
+      "snp_annotations" => {
+        "s3_path" => "#{versioned_output_s3_path}/ksnp3_outputs/SNPs_all_annotated",
+        "required" => false,
+        "remote" => true
+      },
+      "vcf" => {
+        "s3_path" => "#{versioned_output_s3_path}/ksnp3_outputs/variants_reference1.vcf",
+        "required" => false,
+        "remote" => true
+      }
     }
+  end
+
+  def select_outputs(property, value = true)
+    s3_outputs.select { |_output, props| props[property] == value }.keys
   end
 
   def dag_version_file
     "#{phylo_tree_output_s3_path}/#{PipelineRun::PIPELINE_VERSION_FILE}"
+  end
+
+  def runtime(human_readable = true)
+    seconds = (ready_at || Time.current) - created_at
+    human_readable ? distance_of_time_in_words(seconds) : seconds
   end
 
   def monitor_results
@@ -32,16 +59,29 @@ class PhyloTree < ApplicationRecord
     update_pipeline_version(self, :dag_version, dag_version_file)
     return if dag_version.blank?
 
-    # Retrieve output:
-    required_outputs = %w[newick ncbi_metadata]
+    # Retrieve outputs to local db:
+    local_outputs = select_outputs("remote", false)
     temp_files_by_output = {}
-    required_outputs.each do |ro|
-      temp_files_by_output[ro] = Tempfile.new
-      download_status = Open3.capture3("aws", "s3", "cp", s3_outputs[ro], temp_files_by_output[ro].path.to_s)[2]
-      temp_files_by_output[ro].open
-      self[ro] = temp_files_by_output[ro].read if download_status.success?
+    local_outputs.each do |out|
+      temp_files_by_output[out] = Tempfile.new
+      download_status = Open3.capture3("aws", "s3", "cp", s3_outputs[out]["s3_path"], temp_files_by_output[out].path.to_s)[2]
+      temp_files_by_output[out].open
+      self[out] = temp_files_by_output[out].read if download_status.success?
     end
-    self.status = STATUS_READY if required_outputs.all? { |ro| self[ro].present? }
+
+    # Check for remote outputs:
+    remote_outputs = select_outputs("remote")
+    remote_outputs.each do |out|
+      s3_path = s3_outputs[out]["s3_path"]
+      self[out] = s3_path if Open3.capture3("aws", "s3", "ls", s3_path)[2].success?
+    end
+
+    # Update status:
+    required_outputs = select_outputs("required")
+    if required_outputs.all? { |ro| self[ro].present? }
+      self.status = STATUS_READY
+      self.ready_at = Time.current
+    end
     save
 
     # Clean up:
@@ -56,11 +96,12 @@ class PhyloTree < ApplicationRecord
     # Also, populate job_log_id.
     return if throttle && rand >= 0.1 # if throttling, do time-consuming aegea checks only 10% of the time
     job_status, self.job_log_id, _job_hash, self.job_description = job_info(job_id, id)
+    required_outputs = select_outputs("required")
     if job_status == PipelineRunStage::STATUS_FAILED ||
-       (job_status == "SUCCEEDED" && !Open3.capture3("aws", "s3", "ls", s3_outputs["newick"])[2].success?)
+       (job_status == "SUCCEEDED" && !required_outputs.all? { |ro| exists_in_s3?(s3_outputs[ro]["s3_path"]) })
       self.status = STATUS_FAILED
-      save
     end
+    save
   end
 
   def job_command
@@ -88,7 +129,7 @@ class PhyloTree < ApplicationRecord
       species_counts.each do |sc|
         top_taxid_by_run_id[sc.pipeline_run_id] ||= sc.tax_id
       end
-      reference_taxids = top_taxid_by_run_id.values
+      reference_taxids = top_taxid_by_run_id.values.uniq
     else
       reference_taxids = [taxid]
     end
@@ -109,8 +150,8 @@ class PhyloTree < ApplicationRecord
     # Generate DAG
     attribute_dict = {
       phylo_tree_output_s3_path: phylo_tree_output_s3_path,
-      newick_basename: File.basename(s3_outputs["newick"]),
-      ncbi_metadata_basename: File.basename(s3_outputs["ncbi_metadata"]),
+      newick_basename: File.basename(s3_outputs["newick"]["s3_path"]),
+      ncbi_metadata_basename: File.basename(s3_outputs["ncbi_metadata"]["s3_path"]),
       taxid: taxid,
       reference_taxids: reference_taxids,
       superkingdom_name: superkingdom_name,
@@ -157,6 +198,15 @@ class PhyloTree < ApplicationRecord
       self.status = STATUS_FAILED
     end
     save
+  end
+
+  def self.users_by_tree_id
+    ActiveRecord::Base.connection.select_all("
+      select phylo_trees.id as phylo_tree_id, users.id, users.name
+      from phylo_trees, users
+      where phylo_trees.user_id = users.id
+      order by phylo_tree_id
+    ").index_by { |entry| entry["phylo_tree_id"] }
   end
 
   def self.sample_details_by_tree_id

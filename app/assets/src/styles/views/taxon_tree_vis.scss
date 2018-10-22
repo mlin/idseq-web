@@ -3,6 +3,7 @@
 .taxon-tree-vis {
   &__container {
     position: relative;
+    margin-bottom: 15rem;
 
     .node-overlay {
       opacity: 0;
@@ -57,8 +58,8 @@
 
       &__title {
         text-transform: uppercase;
-        color: #888;
-        border-bottom: 1px solid #eee;
+        color: $medium-grey;
+        border-bottom: 1px solid $lightest-grey;
         margin-bottom: 0.5em;
       }
 
