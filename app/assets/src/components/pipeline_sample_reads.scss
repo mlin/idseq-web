@@ -61,6 +61,20 @@
       line-height: $line-height-h3;
     }
 
+    .sampleDetailsLinkContainer {
+      margin-top: 5px;
+    }
+
+    .sampleDetailsLink {
+      color: $primary-light;
+      font-weight: $font-weight-semibold;
+      cursor: pointer;
+
+      &:hover {
+        opacity: 0.5;
+      }
+    }
+
     .trigger {
       margin-right: 10px;
       user-select: none;

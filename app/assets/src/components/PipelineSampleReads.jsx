@@ -13,6 +13,7 @@ import ERCCScatterPlot from "./ERCCScatterPlot";
 import PipelineSampleReport from "./PipelineSampleReport";
 import AMRView from "./AMRView";
 import BasicPopup from "./BasicPopup";
+import SampleDetailsSidebar from "./views/report/SampleDetailsSidebar";
 import { SAMPLE_FIELDS } from "./utils/SampleFields";
 import PrimaryButton from "./ui/controls/buttons/PrimaryButton";
 import cs from "./pipeline_sample_reads.scss";
@@ -63,7 +64,8 @@ class PipelineSampleReads extends React.Component {
       confirmed_names: props.reportDetails
         ? props.reportDetails.confirmed_names
         : [],
-      sample_name: props.sampleInfo.name
+      sample_name: props.sampleInfo.name,
+      sampleDetailsSidebarVisible: false
     };
     this.TYPE_PROMPT = "-";
     this.NUCLEOTIDE_TYPES = ["Not set", "DNA", "RNA"];
@@ -152,6 +154,12 @@ class PipelineSampleReads extends React.Component {
       })
       .catch(err => {});
   }
+
+  toggleSampleDetailsSidebar = () => {
+    this.setState({
+      sampleDetailsSidebarVisible: !this.state.sampleDetailsSidebarVisible
+    });
+  };
 
   toggleHighlightTaxon(e) {
     let taxid = e.target.getAttribute("data-tax-id");
@@ -918,6 +926,14 @@ class PipelineSampleReads extends React.Component {
                   <span className={cs.rightArrow}>{">"}</span>
                 </div>
                 {sampleDropdown}
+                <div className={cs.sampleDetailsLinkContainer}>
+                  <span
+                    className={cs.sampleDetailsLink}
+                    onClick={this.toggleSampleDetailsSidebar}
+                  >
+                    Sample Details
+                  </span>
+                </div>
               </div>
               <div className={cs.fill} />
               {report_buttons}
@@ -1070,6 +1086,10 @@ class PipelineSampleReads extends React.Component {
         >
           {d_report}
         </div>
+        <SampleDetailsSidebar
+          visible={this.state.sampleDetailsSidebarVisible}
+          onClose={this.toggleSampleDetailsSidebar}
+        />
       </div>
     );
   }
