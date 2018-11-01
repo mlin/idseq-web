@@ -23,8 +23,6 @@ class PhyloTreeListView extends React.Component {
         props.phyloTrees
       )
     };
-
-    this.handleTreeChange = this.handleTreeChange.bind(this);
   }
 
   getDefaultSelectedTreeId(urlParams, phyloTrees = []) {
@@ -48,12 +46,12 @@ class PhyloTreeListView extends React.Component {
     return urlParams;
   }
 
-  handleTreeChange(_, newPhyloTreeId) {
-    window.sessionStorage.setItem("treeId", newPhyloTreeId.value);
+  handleTreeChange = newPhyloTreeId => {
+    window.sessionStorage.setItem("treeId", newPhyloTreeId);
     this.setState({
-      selectedPhyloTreeId: newPhyloTreeId.value
+      selectedPhyloTreeId: newPhyloTreeId
     });
-  }
+  };
 
   getTreeStatus(tree) {
     let statusMessage = "";
@@ -101,6 +99,7 @@ class PhyloTreeListView extends React.Component {
                 text: tree.name
               }))}
               value={this.state.selectedPhyloTreeId}
+              rounded
             />
           </FilterRow>
         </div>
